@@ -1,0 +1,21 @@
+{
+  "name": "master-dashboard",
+  "version": "1.0.0",
+  "description": "private project",
+  "workspaces": ["app/*"],
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/hardytran90/Master-Dashboard.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/hardytran90/Master-Dashboard/issues"
+  },
+  "homepage": "https://github.com/hardytran90/Master-Dashboard#readme"
+}
