@@ -2,7 +2,9 @@
   "name": "master-dashboard",
   "version": "1.0.0",
   "description": "private project",
-  "workspaces": ["app/*"],
+  "workspaces": [
+    "apps/*"
+  ],
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -17,5 +19,10 @@
   "bugs": {
     "url": "https://github.com/hardytran90/Master-Dashboard/issues"
   },
-  "homepage": "https://github.com/hardytran90/Master-Dashboard#readme"
+  "homepage": "https://github.com/hardytran90/Master-Dashboard#readme",
+  "devDependencies": {
+    "@types/node": "^26.2.0",
+    "dotenv": "^17.4.2",
+    "prisma": "^7.9.1"
+  }
 }
