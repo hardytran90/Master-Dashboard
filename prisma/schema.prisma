@@ -5,10 +5,177 @@
 
 generator client {
   provider = "prisma-client-js"
-  output   = "../generated/prisma"
 }
 
 datasource db {
   provider = "mysql"
-  url      = env("DATABASE_URL")
+}
+
+// ── Enums ─────────────────────────────────────────────
+enum Provider {
+  strava
+  github
+  wakatime
+}
+
+enum Domain {
+  fitness
+  coding
+  reading
+  writing
+}
+
+enum MetricType {
+  km
+  hours
+  pages
+  posts
+}
+
+enum Period {
+  week
+  month
+  year
+}
+
+enum PostType {
+  blog
+  book_review
+}
+
+enum PostStatus {
+  draft
+  published
+}
+
+enum ReadingStatus {
+  to_read
+  reading
+  finished
+}
+
+// ── Models ────────────────────────────────────────────
+model User {
+  id           Int      @id @default(autoincrement())
+  email        String   @unique
+  passwordHash String?  @map("password_hash")
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  oauthConnections OAuthConnection[]
+  activities       Activity[]
+  codingLogs       CodingLog[]
+  goals            Goal[]
+  posts            Post[]
+
+  @@map("users")
+}
+
+model OAuthConnection {
+  id               Int       @id @default(autoincrement())
+  userId           Int       @map("user_id")
+  provider         Provider
+  accessTokenEnc   String    @map("access_token_enc")
+  refreshTokenEnc  String?   @map("refresh_token_enc")
+  expiresAt        DateTime? @map("expires_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, provider])
+  @@map("oauth_connections")
+}
+
+model Activity {
+  id                Int      @id @default(autoincrement())
+  userId            Int      @map("user_id")
+  type              String   // "run" | "ride"
+  distanceKm        Decimal  @map("distance_km") @db.Decimal(9, 2)
+  durationSec       Int      @map("duration_sec")
+  elevationGainM    Decimal? @map("elevation_gain_m") @db.Decimal(9, 2)
+  activityDate      DateTime @map("activity_date") @db.Date
+  source            String   // "manual" | "strava" | "gpx"
+  stravaActivityId  String?  @unique @map("strava_activity_id")
+  summaryPolyline   String?  @db.Text @map("summary_polyline")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, activityDate])
+  @@map("activities")
+}
+
+model CodingLog {
+  id           Int      @id @default(autoincrement())
+  userId       Int      @map("user_id")
+  logDate      DateTime @map("log_date") @db.Date
+  secondsCoded Int      @map("seconds_coded")
+  source       String   // "wakatime" | "github"
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, logDate, source])
+  @@map("coding_logs")
+}
+
+model Goal {
+  id          Int        @id @default(autoincrement())
+  userId      Int        @map("user_id")
+  domain      Domain
+  metricType  MetricType @map("metric_type")
+  period      Period
+  category    String?    // "run" | "ride" — chỉ dùng cho domain fitness
+  targetValue Decimal    @map("target_value") @db.Decimal(9, 2)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, domain, metricType, period, category])
+  @@map("goals")
+}
+
+model Post {
+  id          Int        @id @default(autoincrement())
+  userId      Int        @map("user_id")
+  title       String
+  slug        String     @unique
+  content     String     @db.Text
+  type        PostType
+  status      PostStatus @default(draft)
+  publishedAt DateTime?  @map("published_at")
+
+  user        User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  bookReview  BookReview?
+  postTags    PostTag[]
+
+  @@index([type, status])
+  @@map("posts")
+}
+
+model BookReview {
+  postId        Int           @id @map("post_id")
+  bookTitle     String        @map("book_title")
+  author        String
+  rating        Int?
+  readingStatus ReadingStatus @default(to_read) @map("reading_status")
+
+  post Post @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  @@map("book_reviews")
+}
+
+model Tag {
+  id   Int    @id @default(autoincrement())
+  name String @unique
+
+  postTags PostTag[]
+
+  @@map("tags")
+}
+
+model PostTag {
+  postId Int @map("post_id")
+  tagId  Int @map("tag_id")
+
+  post Post @relation(fields: [postId], references: [id], onDelete: Cascade)
+  tag  Tag  @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([postId, tagId])
+  @@map("post_tags")
 }

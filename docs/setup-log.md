@@ -1,6 +1,6 @@
 # Master Dashboard — Setup Log
 
-> Tài liệu ghi lại toàn bộ quá trình dựng khung dự án từ đầu, dùng để đọc lại nắm cấu trúc hoặc build lại từ đầu nếu cần. Cập nhật đến bước: đã tạo Prisma Client + MySQL database, khung React/Express chạy được.
+> Tài liệu ghi lại toàn bộ quá trình dựng khung dự án từ đầu, dùng để đọc lại nắm cấu trúc hoặc build lại từ đầu nếu cần. Cập nhật đến bước: **Prisma Client đã kết nối thành công vào Express** qua `core/prisma.js`, đọc/ghi được cả 9 model, sẵn sàng viết route thật.
 
 ---
 
@@ -241,7 +241,11 @@ touch prisma/schema.prisma
 touch .env
 ```
 
-`prisma/schema.prisma` — phần khung đầu:
+**Lưu ý quan trọng — Prisma 7 đổi cách cấu hình so với bản cũ:**
+- `url` trong block `datasource` **không còn được phép** viết trực tiếp trong `schema.prisma` nữa — phải khai báo qua file `prisma.config.ts` ở root.
+- `PrismaClient` lúc chạy code (runtime) **bắt buộc phải truyền `adapter`** (driver adapter) cho mọi loại database, kể cả MySQL — không tự kết nối qua engine ngầm như Prisma 6 trở về trước.
+
+`prisma/schema.prisma` — phần khung đầu (không có `url`):
 ```prisma
 generator client {
   provider = "prisma-client-js"
@@ -249,8 +253,19 @@ generator client {
 
 datasource db {
   provider = "mysql"
-  url      = env("DATABASE_URL")
 }
+```
+
+`prisma.config.ts` ở root — nơi khai báo `url` cho CLI dùng khi chạy `migrate`/`generate`:
+```typescript
+import "dotenv/config";
+import { defineConfig } from "prisma/config";
+
+export default defineConfig({
+  schema: "prisma/schema.prisma",
+  migrations: { path: "prisma/migrations" },
+  datasource: { url: process.env["DATABASE_URL"] },
+});
 ```
 
 `.env` ở root:
@@ -261,11 +276,57 @@ DATABASE_URL="mysql://user:password@localhost:3306/master_dashboard"
 Sau khi có đầy đủ schema (9 model: `User`, `OAuthConnection`, `Activity`, `CodingLog`, `Goal`, `Post`, `BookReview`, `Tag`, `PostTag` — xem chi tiết ở mục 5), chạy migration đầu tiên:
 
 ```bash
-npx prisma migrate dev --name init --schema=./prisma/schema.prisma
-npx prisma generate --schema=./prisma/schema.prisma
+npx prisma migrate dev --name init --schema=prisma/schema.prisma
+npx prisma generate --schema=prisma/schema.prisma
 ```
 
 ✅ **Trạng thái đã xác nhận:** Prisma Client đã generate thành công, MySQL database đã được tạo theo schema.
+
+### 4.5. Kết nối Prisma Client vào Express (`core/prisma.js`)
+
+Vì Prisma 7 yêu cầu driver adapter, cần cài thêm:
+```bash
+npm install @prisma/adapter-mariadb --workspace=apps/api
+```
+
+`apps/api/src/core/prisma.js` — bản hoàn chỉnh:
+```js
+import { config } from 'dotenv';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+config({ path: path.resolve(__dirname, '../../../../.env') }); // load .env từ root
+
+import { PrismaClient } from '@prisma/client';
+import { PrismaMariaDb } from '@prisma/adapter-mariadb';
+
+const globalForPrisma = globalThis;
+
+// Adapter cần từng field riêng (host/user/password/database),
+// không parse được url gộp, nên phải tách từ DATABASE_URL
+const dbUrl = new URL(process.env.DATABASE_URL);
+const adapter = new PrismaMariaDb({
+  host: dbUrl.hostname,
+  port: Number(dbUrl.port) || 3306,
+  user: decodeURIComponent(dbUrl.username),
+  password: decodeURIComponent(dbUrl.password),
+  database: dbUrl.pathname.replace(/^\//, ''),
+  connectTimeout: 5000,
+  idleTimeout: 300,
+});
+
+export const prisma =
+  globalForPrisma.prisma ?? new PrismaClient({ adapter });
+
+if (process.env.NODE_ENV !== 'production') {
+  globalForPrisma.prisma = prisma;
+}
+```
+
+**Cách test nhanh trước khi đụng vào route** — tạo `core/test-connection.js` gọi `prisma.$connect()` + 1 query đơn giản (`prisma.user.count()`), chạy bằng `node src/core/test-connection.js` từ `apps/api`. Mục đích: tách riêng lỗi "kết nối DB" khỏi lỗi "route Express", tránh debug lẫn lộn.
+
+✅ **Trạng thái đã xác nhận:** Kết nối thành công, query chạy được, Prisma Client nhận diện đủ 9 model (`user`, `oAuthConnection`, `activity`, `codingLog`, `goal`, `post`, `bookReview`, `tag`, `postTag`).
 
 ---
 
@@ -297,6 +358,12 @@ Schema đầy đủ (Prisma models, field, quan hệ, index) đã được viế
 | `npx prisma init --schema=...` không tạo được file | `init` không hỗ trợ cờ `--schema` | Chạy `npx prisma init --datasource-provider mysql` (không cờ `--schema`) hoặc tạo file thủ công |
 | `Failed to resolve import "./index.css"` | Đã `mv main.jsx` vào `app/` nhưng đường dẫn import chưa cập nhật theo vị trí mới | Sửa thành `import '../index.css'` |
 | `Failed to resolve import "./App.jsx"` | `App.jsx` đã bị xoá ở bước dọn dẹp, chưa tạo lại | Tạo `App.jsx` tối giản để xác nhận khung chạy, viết đầy đủ sau |
+| `Cannot find module '.prisma/client/default'` | Prisma Client chưa generate đúng chỗ, hoặc generator dùng `output` custom nên không nằm ở `node_modules/@prisma/client` mặc định | Chạy `npx prisma generate --schema=prisma/schema.prisma`; kiểm tra `generator client` trong schema có `output` custom không |
+| `The datasource property 'url' is no longer supported in schema files` | Prisma 7 cấm khai báo `url` trong `datasource` của `schema.prisma` | Bỏ `url` khỏi `schema.prisma`, chuyển sang khai báo trong `prisma.config.ts` |
+| `SyntaxError: Unexpected token 'export'` khi chạy file Client generate ra | Generator `prisma-client` (engine mới) xuất code chứa cú pháp TypeScript (`export type ...`) dù đổi đuôi file thành `.js` — không thực sự compile | Đổi lại generator về `prisma-client-js` (cổ điển) — xuất JS thuần vào `node_modules/@prisma/client`, không lỗi cú pháp |
+| `pool timeout: failed to retrieve a connection from pool` khi query qua adapter | `@prisma/adapter-mariadb` không tự parse được `DATABASE_URL` dạng chuỗi gộp | Parse `DATABASE_URL` bằng `new URL()` thành từng field (`host`, `port`, `user`, `password`, `database`) rồi truyền riêng vào `PrismaMariaDb({...})` |
+| `TypeError: Invalid URL` — input là `undefined` | `.env` nằm ở root nhưng `node` chạy từ `apps/api`, `dotenv/config` mặc định không tìm thấy | Dùng `dotenv`'s `config({ path: ... })` trỏ tuyệt đối tới `.env` ở root thay vì import `'dotenv/config'` mặc định |
+| `prisma.user.count()` báo lỗi vì file `schema.prisma` bị rỗng (mất hết model) | Trong lúc sửa qua lại phần `generator`/`datasource`, nội dung `model` bị ghi đè mất mà không để ý | Tìm lại schema đầy đủ đã lưu trong lịch sử chat trước đó (`conversation_search`), khôi phục nguyên vẹn; nên cân nhắc `git commit` schema sau mỗi lần chỉnh sửa để tránh mất lại |
 
 ---
 
@@ -308,7 +375,7 @@ Schema đầy đủ (Prisma models, field, quan hệ, index) đã được viế
 - [x] Prisma schema đầy đủ 9 bảng
 - [x] Migration chạy thành công, MySQL database đã tạo
 - [x] Prisma Client đã generate
-- [ ] Kết nối Prisma Client vào Express (`core/prisma.js`)
+- [x] Kết nối Prisma Client vào Express (`core/prisma.js`) — đã test thành công qua `test-connection.js`, nhận đủ 9 model
 - [ ] Module registry rỗng bên frontend (`modules/index.js`)
 - [ ] Module fitness đầu tiên (route + migrate dữ liệu từ My Run Log cũ)
 - [ ] Module coding, blog, books
@@ -316,6 +383,12 @@ Schema đầy đủ (Prisma models, field, quan hệ, index) đã được viế
 
 ## 8. Bước tiếp theo gợi ý
 
-1. Viết `apps/api/src/core/prisma.js` — khởi tạo 1 instance `PrismaClient` dùng chung toàn backend
-2. Viết module `fitness` đầu tiên: route `GET /activities`, migrate logic từ `activities.js`/`strava.js` cũ sang dùng Prisma Client thay cho `pool.query`
-3. Dựng `modules/index.js` rỗng bên frontend + `Dashboard.jsx` khung để bắt đầu ráp UI
+1. Viết module `fitness` đầu tiên: route `GET /activities` trong `apps/api/src/modules/fitness/`, dùng `prisma.activity.findMany(...)` thay cho `pool.query` cũ; sau đó migrate logic sync Strava từ `strava.js` cũ sang cùng cách dùng Prisma Client
+2. Dựng `modules/index.js` rỗng bên frontend + `Dashboard.jsx` khung, nối vào endpoint `GET /activities` ở bước 1 để thấy dữ liệu chạy thật end-to-end trước khi mở rộng
+3. Định hình sẵn "interface" chuẩn cho 1 module frontend (key, label, route, DashboardWidget...) ngay từ module fitness, để module coding/blog/books sau này theo đúng khuôn, không phải refactor lại registry
+
+## 9. Ghi chú quan trọng cho lần sau
+
+- **Prisma 7 khác hẳn Prisma 6** ở cách cấu hình kết nối DB — nếu tra cứu tài liệu cũ hoặc hỏi AI mà thấy hướng dẫn có `url` trong `datasource` của `schema.prisma`, đó là hướng dẫn cho bản cũ, không áp dụng được nữa.
+- **Luôn dùng generator `prisma-client-js`** (không phải `prisma-client`) cho project JS thuần như `apps/api` — generator mới chỉ hợp với project chạy TypeScript qua `tsx`/`ts-node`.
+- Nên **commit `schema.prisma` vào Git** ngay sau khi hoàn thiện, tránh lặp lại sự cố mất nội dung model giữa chừng như đã gặp.
