@@ -1,6 +1,6 @@
 # Master Dashboard — Setup Log
 
-> Tài liệu ghi lại toàn bộ quá trình dựng khung dự án từ đầu, dùng để đọc lại nắm cấu trúc hoặc build lại từ đầu nếu cần. Cập nhật đến bước: **Prisma Client đã kết nối thành công vào Express** qua `core/prisma.js`, đọc/ghi được cả 9 model, sẵn sàng viết route thật.
+> Tài liệu ghi lại toàn bộ quá trình dựng khung dự án từ đầu, dùng để đọc lại nắm cấu trúc hoặc build lại từ đầu nếu cần. Cập nhật đến bước: **module fitness có luồng auth → route bảo vệ hoàn chỉnh** — `POST /auth/register`, `POST /auth/login`, middleware `requireAuth`, và `GET /activities` (Prisma + pagination + filter) đã test thành công qua Postman/curl.
 
 ---
 
@@ -54,11 +54,11 @@ master-dashboard/
 │   │
 │   └── api/                        # Backend — Express + Node
 │       └── src/
-│           ├── modules/            # auth, fitness, coding, blog, books
+│           ├── routes/             # auth.js, activities.js, coding.js, posts.js, goals.js
 │           ├── integrations/       # strava.js, github.js, wakatime.js
 │           ├── core/
 │           │   ├── middleware/
-│           │   │   └── auth.js
+│           │   │   └── requireAuth.js   # đặt tên riêng, tránh trùng routes/auth.js
 │           │   └── prisma.js
 │           └── server.js
 │
@@ -328,6 +328,36 @@ if (process.env.NODE_ENV !== 'production') {
 
 ✅ **Trạng thái đã xác nhận:** Kết nối thành công, query chạy được, Prisma Client nhận diện đủ 9 model (`user`, `oAuthConnection`, `activity`, `codingLog`, `goal`, `post`, `bookReview`, `tag`, `postTag`).
 
+### 4.6. Module fitness — auth + route `GET /activities`
+
+**Bước 1 — Route đăng ký/đăng nhập (`apps/api/src/routes/auth.js`):**
+
+`POST /api/auth/register` — nhận `email` + `password`, hash password bằng `bcrypt.hash`, tạo user qua `prisma.user.create`, trả về JWT ký bằng `jwt.sign({ userId: user.id }, process.env.JWT_SECRET, { expiresIn: '7d' })`.
+
+`POST /api/auth/login` — tìm user qua `prisma.user.findUnique({ where: { email } })`, so khớp password bằng `bcrypt.compare`, trả JWT theo cùng cách trên.
+
+**Bước 2 — Middleware xác thực (`apps/api/src/core/middleware/requireAuth.js`):**
+
+Đọc header `Authorization: Bearer <token>`, verify bằng `jwt.verify(token, process.env.JWT_SECRET)`, gắn `req.user = { id: decoded.userId }` rồi gọi `next()` cho các route phía sau dùng. Thiếu/sai/hết hạn token → trả `401`, chặn không cho đi tiếp.
+
+**Bước 3 — Route dữ liệu (`apps/api/src/routes/activities.js`):**
+
+`GET /activities` (được bảo vệ bởi `requireAuth`) — đọc `req.user.id` để chỉ trả activity của đúng user đó, hỗ trợ filter `type`/`from`/`to` và pagination `page`/`limit`, dùng `prisma.activity.findMany(...)` + `prisma.activity.count(...)` (chạy song song bằng `Promise.all`) thay cho `pool.query` thủ công của My Run Log cũ.
+
+**Bước 4 — Mount route vào `server.js`:**
+
+```js
+import authRouter from './routes/auth.js';
+import activitiesRouter from './routes/activities.js';
+
+app.use('/api', authRouter);       // → POST /api/auth/register, /api/auth/login
+app.use('/api', activitiesRouter); // → GET /api/activities
+```
+
+**Bước 5 — Test bằng Postman:** đăng ký user test qua `/auth/register` (nhận token luôn), gọi `/auth/login` xác nhận hoạt động, gắn token vào tab Authorization → Bearer Token, gọi `GET /activities` kèm query params `page`/`limit`/`type`/`from`/`to`.
+
+✅ **Trạng thái đã xác nhận:** toàn bộ luồng `register → login → requireAuth → GET /activities` chạy đúng như kỳ vọng, response trả `{ data: [...], pagination: {...} }`.
+
 ---
 
 ## 5. Database schema — tóm tắt các bảng
@@ -376,16 +406,21 @@ Schema đầy đủ (Prisma models, field, quan hệ, index) đã được viế
 - [x] Migration chạy thành công, MySQL database đã tạo
 - [x] Prisma Client đã generate
 - [x] Kết nối Prisma Client vào Express (`core/prisma.js`) — đã test thành công qua `test-connection.js`, nhận đủ 9 model
+- [x] Route `POST /auth/register` + `POST /auth/login` (bcrypt hash + JWT)
+- [x] Middleware `requireAuth` (`core/middleware/requireAuth.js`) — verify JWT, gắn `req.user.id`
+- [x] Route `GET /activities` (Prisma + filter + pagination), bảo vệ bởi `requireAuth` — đã test end-to-end qua Postman
+- [ ] Route `POST /activities` (tạo activity thủ công, để có dữ liệu test thật)
 - [ ] Module registry rỗng bên frontend (`modules/index.js`)
-- [ ] Module fitness đầu tiên (route + migrate dữ liệu từ My Run Log cũ)
+- [ ] Sync dữ liệu Strava (`integrations/strava.js`, dùng bảng `oauth_connections`)
 - [ ] Module coding, blog, books
 - [ ] Trang Dashboard tổng hợp
 
 ## 8. Bước tiếp theo gợi ý
 
-1. Viết module `fitness` đầu tiên: route `GET /activities` trong `apps/api/src/modules/fitness/`, dùng `prisma.activity.findMany(...)` thay cho `pool.query` cũ; sau đó migrate logic sync Strava từ `strava.js` cũ sang cùng cách dùng Prisma Client
-2. Dựng `modules/index.js` rỗng bên frontend + `Dashboard.jsx` khung, nối vào endpoint `GET /activities` ở bước 1 để thấy dữ liệu chạy thật end-to-end trước khi mở rộng
-3. Định hình sẵn "interface" chuẩn cho 1 module frontend (key, label, route, DashboardWidget...) ngay từ module fitness, để module coding/blog/books sau này theo đúng khuôn, không phải refactor lại registry
+1. Viết `POST /activities` để tạo dữ liệu test thật trong bảng (hiện đang rỗng), theo cùng pattern `routes/` + `requireAuth` đã có
+2. Migrate logic sync Strava từ `strava.js` cũ sang `integrations/strava.js`, dùng Prisma + bảng `oauth_connections` thay vì lưu token rời rạc như code cũ
+3. Dựng `modules/index.js` rỗng bên frontend + `Dashboard.jsx` khung, nối vào endpoint `GET /activities` để thấy dữ liệu chạy thật end-to-end trước khi mở rộng
+4. Định hình sẵn "interface" chuẩn cho 1 module frontend (key, label, route, DashboardWidget...) ngay từ module fitness, để module coding/blog/books sau này theo đúng khuôn, không phải refactor lại registry
 
 ## 9. Ghi chú quan trọng cho lần sau
 

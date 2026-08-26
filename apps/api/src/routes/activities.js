@@ -1,16 +1,16 @@
 // apps/api/src/routes/activities.js
 import { Router } from 'express';
 import { prisma } from '../core/prisma.js';
-import { requireAuth } from '../middleware/auth.js';
+import { requireAuth } from '../core/middleware/requireAuth.js';
 
 const router = Router();
 
 router.get('/activities', requireAuth, async (req, res) => {
   try {
-    const userId = req.user.id; // gắn bởi requireAuth (giữ nguyên middleware cũ)
+    const userId = req.user.id; // mounted by requireAuth (keep old middleware)
     const { type, from, to, page = 1, limit = 20 } = req.query;
 
-    const take = Math.min(Number(limit) || 20, 100); // chặn limit quá lớn
+    const take = Math.min(Number(limit) || 20, 100); // Prevent large limit
     const skip = (Math.max(Number(page) || 1, 1) - 1) * take;
 
     const where = {
@@ -45,7 +45,7 @@ router.get('/activities', requireAuth, async (req, res) => {
     });
   } catch (err) {
     console.error('GET /activities error:', err);
-    res.status(500).json({ error: 'Không thể tải danh sách hoạt động' });
+    res.status(500).json({ error: 'Cannot load activities' });
   }
 });
 
