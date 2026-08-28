@@ -49,4 +49,42 @@ router.get('/activities', requireAuth, async (req, res) => {
   }
 });
 
+router.post('/activities', requireAuth, async (req, res) => {
+    try {
+        const userId = req.user.id;
+        const {
+            type,
+            activityDate,
+            distanceKm,
+            durationSec,
+            elevationGainM,
+            source = 'manual',
+        } = req.body;
+
+        // Minimum validate - 3 required categories for each activity
+        if (!type || !activityDate || distanceKm == null || durationSec == null) {
+            return res.status(400).json({
+                error: 'Required categories is missing: type, activityDate, distanceKm, durationSec',
+            });
+        }
+
+        const activity = await prisma.activity.create({
+            data: {
+                userId,
+                type,
+                activityDate: new Date(activityDate),
+                distanceKm: distanceKm,
+                durationSec: Number(durationSec),
+                elevationGainM: elevationGainM != null ? Number(elevationGainM) : null,
+                source, // 'manual' default - distinguish with Strava
+            },
+        });
+
+        res.status(201).json({ data: activity });
+    } catch (err) {
+    console.error('POST /activities error: ', err);
+    res.status(500).json({ error: 'Cannot create activity!' });
+    }
+});
+
 export default router;
