@@ -10,7 +10,6 @@ const STRAVA_TOKEN_URL = 'https://www.strava.com/oauth/token';
 const STRAVA_API_BASE = 'https://www.strava.com/api/v3';
 
 // REDIRECT TO AUTHORIZATION PAGE OF STRAVA
-
 router.get('/strava/connect', requireAuth, (req, res) => {
     const params = new URLSearchParams({
         client_id: process.env.STRAVA_CLIENT_ID,
