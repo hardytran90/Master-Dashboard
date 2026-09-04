@@ -1,9 +1,25 @@
+import { Routes, Route, Navigate } from 'react-router-dom';
+import { useAuth } from '../shared/hooks/useAuth';
+import LoginPage from '../features/auth/LoginPage';
+import FitnessPage from '../features/fitness/FitnessPage';
+
+function ProtectedRoute({ children }) {
+  const { isAuthenticated } = useAuth();
+  return isAuthenticated ? children : <Navigate to = "/login" />;
+}
+
 export default function App() {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50">
-      <h1 className="text-2xl font-semibold text-gray-800">
-        Master Dashboard — Running successful!
-      </h1>
-    </div>
+    <Routes>
+      <Route path="/login" element={<LoginPage />} />
+      <Route 
+      path="/"
+      element={
+        <ProtectedRoute>
+          <FitnessPage />
+        </ProtectedRoute>
+      }
+      />
+    </Routes>
   );
 }
