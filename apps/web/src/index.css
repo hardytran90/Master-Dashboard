@@ -1,1 +1,70 @@
+/* apps/web/src/index.css */
 @import "tailwindcss";
+
+@layer components {
+  /* Centered layout for standalone form pages (login...) */
+  .page-centered {
+    @apply min-h-screen flex items-center justify-center bg-gray-50;
+  }
+
+  /* Main content container for pages after login */
+  .page-container {
+    @apply max-w-2xl mx-auto p-6 space-y-6;
+  }
+
+  .page-title {
+    @apply text-xl font-semibold text-gray-800;
+  }
+
+  /* Card — white rounded box, used for forms, lists, any content block */
+  .card {
+    @apply bg-white p-4 rounded-lg border border-gray-200;
+  }
+
+  .card-title {
+    @apply text-sm font-semibold text-gray-800;
+  }
+
+  /* Form */
+  .form-input {
+    @apply w-full border border-gray-300 rounded px-3 py-2 text-sm
+           focus:outline-none focus:ring-2 focus:ring-gray-900/10;
+  }
+
+  .form-select {
+    @apply border border-gray-300 rounded px-2 py-1.5 text-sm
+           focus:outline-none focus:ring-2 focus:ring-gray-900/10;
+  }
+
+  .form-error {
+    @apply text-sm text-red-600;
+  }
+
+  .form-hint {
+    @apply text-xs text-gray-100;
+  }
+
+  /* Button */
+  .btn-primary {
+    @apply w-full bg-gray-900 text-white rounded py-2 text-sm
+           disabled:opacity-50 hover:bg-gray-800 transition-colors;
+  }
+
+  /* Small badge showing data source (manual/strava/gpx) */
+  .badge {
+    @apply text-xs px-1.5 py-0.5 bg-gray-100 rounded uppercase text-gray-600;
+  }
+
+  /* Status messages */
+  .status-success {
+    @apply text-xs text-green-600;
+  }
+
+  .status-loading {
+    @apply text-xs text-gray-500;
+  }
+
+  .empty-state {
+    @apply text-sm text-gray-500;
+  }
+}
