@@ -9,8 +9,8 @@ async function request(path, options = {}) {
     const res = await fetch(`${API_BASE}${path}`, {
         ...options,
         headers: {
-            ...API_BASE(options.body instanceof FormData ? {} : { 'Content-Type': 'application/json' }),
-            ...API_BASE(token ? { Authorization: `Bearer ${token}` } : {}),
+            ...(options.body instanceof FormData ? {} : { 'Content-Type': 'application/json' }),
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
             ...options.headers,
         },
     });
