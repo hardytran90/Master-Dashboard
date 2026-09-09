@@ -1,6 +1,6 @@
 # Master Dashboard — Setup Log
 
-> Tài liệu ghi lại toàn bộ quá trình dựng khung dự án từ đầu, dùng để đọc lại nắm cấu trúc hoặc build lại từ đầu nếu cần. Cập nhật đến bước: **module fitness có luồng auth → route bảo vệ hoàn chỉnh** — `POST /auth/register`, `POST /auth/login`, middleware `requireAuth`, và `GET /activities` (Prisma + pagination + filter) đã test thành công qua Postman/curl.
+> Tài liệu ghi lại toàn bộ quá trình dựng khung dự án từ đầu, dùng để đọc lại nắm cấu trúc hoặc build lại từ đầu nếu cần. Cập nhật đến bước: **module fitness hoàn chỉnh end-to-end** — backend (`POST/GET /activities`, `POST /activities/import-gpx`) và frontend (login, danh sách + form nhập tay + upload GPX, hiển thị real-time) đã test thành công qua Postman và trên UI thật.
 
 ---
 
@@ -358,6 +358,52 @@ app.use('/api', activitiesRouter); // → GET /api/activities
 
 ✅ **Trạng thái đã xác nhận:** toàn bộ luồng `register → login → requireAuth → GET /activities` chạy đúng như kỳ vọng, response trả `{ data: [...], pagination: {...} }`.
 
+### 4.7. Route `POST /activities` — tạo dữ liệu test thật
+
+Cùng file `routes/activities.js`, cùng `router`. Nhận `type`, `activityDate`, `distanceKm`, `durationSec`, `elevationGainM` (optional), `source` (mặc định `'manual'`) từ body, validate tối thiểu 4 trường bắt buộc, tạo qua `prisma.activity.create(...)`, gắn `userId` từ `req.user.id`.
+
+**Lưu ý quan trọng về tên field:** field thật trong schema là `distanceKm` (kiểu `Decimal`) và `durationSec` — không phải `distance`/`duration` như bản nháp đầu tiên. Kiểu `Decimal` của Prisma nhận số thường (`5.2`) lúc gửi vào nhưng **trả về dạng string** (`"5.2"`) khi query lại — cần frontend xử lý đúng (không ép `Number()` nếu chỉ để hiển thị).
+
+✅ **Trạng thái đã xác nhận:** tạo được nhiều activity qua Postman (khác `type`, khác ngày), `GET /activities` trả đúng thứ tự `desc`, filter `type`/`from`/`to` và pagination `page`/`limit` đều hoạt động đúng.
+
+### 4.8. Route `POST /activities/import-gpx` — parse file GPX thủ công
+
+**Bối cảnh:** Strava đã giới hạn API activity cho tier miễn phí (bắt trả phí hàng tháng), nên tạm hoãn sync tự động qua OAuth. Hướng thay thế: tải file `.gpx` thủ công từ Strava, upload qua form riêng, backend tự parse ra số liệu.
+
+**Thư viện thêm:**
+```bash
+npm install multer fast-xml-parser --workspace=apps/api
+```
+
+**`apps/api/src/utils/gpx.js`:** dùng `fast-xml-parser` (`XMLParser`) đọc cấu trúc `<gpx><trk><trkseg><trkpt lat lon><ele><time>`, sau đó:
+- Tính tổng quãng đường bằng **công thức Haversine** (khoảng cách giữa 2 điểm trên mặt cầu) cộng dồn qua từng cặp điểm liên tiếp
+- Tính **elevation gain** bằng cách chỉ cộng phần **tăng** độ cao giữa điểm sau so với điểm trước (bỏ qua phần xuống dốc)
+- Tính **duration** = mốc thời gian điểm cuối trừ điểm đầu (`null` nếu file GPX không có tag `<time>`)
+
+**Route trong `routes/activities.js`:** dùng `multer({ storage: memoryStorage() })` để nhận file qua field `'file'` (`multipart/form-data`), đọc buffer thành chuỗi XML, gọi `parseGpx()`, tạo activity với `source: 'gpx'`.
+
+✅ **Trạng thái đã xác nhận:** upload file `.gpx` thật từ Strava qua UI, activity mới xuất hiện với số liệu (`distanceKm`, `durationSec`, `elevationGainM`) chính xác so với thực tế.
+
+### 4.9. Frontend — routing, auth, và UI module fitness
+
+**Cài thêm:**
+```bash
+npm install react-router-dom --workspace=apps/web
+```
+
+**Cấu trúc đã dựng:**
+- `lib/api.js` — lớp giao tiếp API duy nhất, hàm `request()` dùng chung tự gắn header `Authorization: Bearer <token>` (đọc từ `localStorage`) và tự nhận diện `body instanceof FormData` để bỏ qua `Content-Type: application/json` khi upload file
+- `shared/hooks/useAuth.jsx` — `AuthContext` + `AuthProvider`, quản lý `token`/`isAuthenticated`, expose `login()`/`logout()`
+- `features/auth/LoginPage.jsx` — form đăng nhập, gọi `useAuth().login()`
+- `features/fitness/ActivityList.jsx` — load + hiển thị activity qua `useEffect` phụ thuộc `refreshKey`
+- `features/fitness/ActivityForm.jsx` — form nhập tay, gọi `api.createActivity()`
+- `features/fitness/GpxUploadForm.jsx` — chọn file → hiện tên file → bấm nút Upload riêng (tách biệt khỏi bước chọn file) → gọi `api.importGpx()`
+- `features/fitness/FitnessPage.jsx` — ráp 3 component trên, dùng state `refreshKey` chung để đồng bộ list mỗi khi tạo/import activity mới
+- `App.jsx` — `<Routes>` với `ProtectedRoute` (dựa vào `isAuthenticated`, đá về `/login` nếu chưa đăng nhập)
+- `index.css` — định nghĩa toàn bộ style dùng chung qua `@layer components` (`.card`, `.btn-primary`, `.form-input`, `.page-container`...) — **quy tắc bắt buộc:** style luôn viết ở đây, không viết chuỗi Tailwind dài trực tiếp trong từng file `.jsx`, để đồng bộ và dễ sửa toàn dự án từ 1 chỗ
+
+✅ **Trạng thái đã xác nhận:** luồng đầy đủ hoạt động trên UI thật — chưa đăng nhập bị đá về `/login` → đăng nhập đúng vào được trang Fitness → danh sách hiển thị đúng data thật từ MySQL → tạo activity qua form nhập tay và qua upload GPX đều cập nhật danh sách ngay, không cần F5.
+
 ---
 
 ## 5. Database schema — tóm tắt các bảng
@@ -394,6 +440,18 @@ Schema đầy đủ (Prisma models, field, quan hệ, index) đã được viế
 | `pool timeout: failed to retrieve a connection from pool` khi query qua adapter | `@prisma/adapter-mariadb` không tự parse được `DATABASE_URL` dạng chuỗi gộp | Parse `DATABASE_URL` bằng `new URL()` thành từng field (`host`, `port`, `user`, `password`, `database`) rồi truyền riêng vào `PrismaMariaDb({...})` |
 | `TypeError: Invalid URL` — input là `undefined` | `.env` nằm ở root nhưng `node` chạy từ `apps/api`, `dotenv/config` mặc định không tìm thấy | Dùng `dotenv`'s `config({ path: ... })` trỏ tuyệt đối tới `.env` ở root thay vì import `'dotenv/config'` mặc định |
 | `prisma.user.count()` báo lỗi vì file `schema.prisma` bị rỗng (mất hết model) | Trong lúc sửa qua lại phần `generator`/`datasource`, nội dung `model` bị ghi đè mất mà không để ý | Tìm lại schema đầy đủ đã lưu trong lịch sử chat trước đó (`conversation_search`), khôi phục nguyên vẹn; nên cân nhắc `git commit` schema sau mỗi lần chỉnh sửa để tránh mất lại |
+| `Argument distanceKm is missing` khi `POST /activities` | Route gửi field `distance`/`duration` nhưng schema thật đặt tên cột là `distanceKm`/`durationSec` | Đối chiếu đúng tên field trong `schema.prisma` trước khi viết body request, không đoán tên theo cảm tính |
+| Trang `/login` không có style, chỉ hiện chữ thô | `vite.config.js` có `import tailwindcss from '@tailwindcss/vite'` nhưng quên thêm `tailwindcss()` vào mảng `plugins: [react()]` | Thêm đủ `plugins: [react(), tailwindcss()]`, sau đó **bắt buộc tắt và chạy lại `npm run dev`** — Vite không tự nhận thay đổi trong `vite.config.js` khi server đang chạy |
+| Bấm nút Login → trang tự F5, không gọi được API | Lỗi JS xảy ra **trước** dòng `e.preventDefault()` kịp chạy (do lỗi bên trong `handleSubmit`), khiến trình duyệt fallback về hành vi submit form mặc định (tải lại trang) | Sửa lỗi gốc bên trong hàm submit; luôn kiểm tra Console trước khi nghi ngờ do thiếu `preventDefault()` |
+| `API_BASE is not a function` | Gõ nhầm `...API_BASE(...)` thay vì `...(...)` (spread operator) trong phần `headers` của `lib/api.js` — `API_BASE` chỉ là 1 chuỗi, không phải hàm | Đối chiếu kỹ ký tự khi gõ lại code từ mẫu, đặc biệt các đoạn có spread operator lồng điều kiện `? :` |
+| Đăng nhập đúng mật khẩu vẫn báo lỗi 500 | `pool timeout: failed to retrieve a connection from pool` — MySQL server chưa chạy hoặc chưa khởi động lại sau khi máy restart | `brew services start mysql` (hoặc `docker start <container>` nếu dùng Docker), test lại bằng `mysql -u root -p -h 127.0.0.1 -P 3306` trước khi đụng tới Prisma |
+| Đăng nhập thành công (token lưu đúng vào `localStorage`) nhưng vẫn bị đá về `/login` | Gõ nhầm `isAUthenticated` (chữ U hoa) trong `AuthContext.Provider value={{...}}`, nhưng nơi dùng lại gọi `isAuthenticated` (u thường) — JavaScript phân biệt hoa/thường nên trả về `undefined`, không báo lỗi gì (sai logic thầm lặng, không phải crash) | Đối chiếu chính xác từng ký tự tên biến khi tên đó được dùng ở nhiều file khác nhau; lỗi loại này không hiện trong Console vì không phải lỗi cú pháp |
+| Component `GpxUploadForm` biến mất hoàn toàn khỏi trang, không lỗi Console | Thiếu dấu đóng `}` sau khi kết thúc hàm `handleFileChange`, khiến hàm `handleUpload` và cả đoạn `return (...)` JSX bị lồng nhầm vào bên trong `handleFileChange` — component chính không còn `return` gì ở cấp ngoài cùng | Kiểm tra kỹ số lượng dấu `{ }` đóng/mở khớp nhau, đặc biệt khi có nhiều hàm khai báo liên tiếp trong 1 component |
+| Bấm nút Upload không có phản ứng gì (không lỗi, không request, không đổi UI) | `e.target.file` (thiếu chữ `s`) thay vì `e.target.files` — luôn trả `undefined`, khiến `selectedFile` luôn là `null`; `handleUpload` gặp `if (!selectedFile) return;` và dừng ngay dòng đầu, im lặng không báo gì | Khi nút bấm "không có phản ứng gì" dù không disabled, nghi ngờ ngay dòng `return` sớm ở đầu hàm xử lý; có thể tự thêm `console.log()` tạm để kiểm tra giá trị state thực tế |
+| `parse is not defined` khi upload GPX | Gõ nhầm `parse.parse(xmlString)` thay vì `parser.parse(xmlString)` — biến khai báo tên là `parser` (từ `new XMLParser(...)`) | Đối chiếu đúng tên biến đã khai báo ở đầu file, đặc biệt khi tên gần giống nhau (`parse` vs `parser`) |
+| `max-w-2x1` / `text-x1` không có hiệu lực gì, không báo lỗi | Gõ nhầm số `1` thay vì chữ `l` trong class Tailwind (`2xl`, `xl`) — Tailwind âm thầm bỏ qua class không tồn tại, không crash, không warning | Khi 1 class Tailwind "không có tác dụng gì" dù đã gõ, nghi ngờ ngay lỗi chính tả trong tên class, so sánh trực tiếp với tài liệu Tailwind |
+
+**Nhận xét chung về nhóm lỗi ở bước 4.7–4.9:** phần lớn là lỗi gõ tay khi tự đánh lại code mẫu (nhầm hoa/thường, thiếu 1 ký tự, thiếu dấu đóng ngoặc) — không phải lỗi thiết kế hay logic sai. Cách chẩn đoán hiệu quả nhất đã dùng: kiểm tra theo thứ tự UI → Console → Network → log backend, thu hẹp dần lỗi nằm ở tầng nào trước khi soát lại từng dòng code.
 
 ---
 
@@ -409,21 +467,31 @@ Schema đầy đủ (Prisma models, field, quan hệ, index) đã được viế
 - [x] Route `POST /auth/register` + `POST /auth/login` (bcrypt hash + JWT)
 - [x] Middleware `requireAuth` (`core/middleware/requireAuth.js`) — verify JWT, gắn `req.user.id`
 - [x] Route `GET /activities` (Prisma + filter + pagination), bảo vệ bởi `requireAuth` — đã test end-to-end qua Postman
-- [ ] Route `POST /activities` (tạo activity thủ công, để có dữ liệu test thật)
+- [x] Route `POST /activities` (tạo activity thủ công) — test qua Postman, đủ dữ liệu để kiểm chứng filter/pagination
+- [x] Route `POST /activities/import-gpx` (parse GPX, Haversine, elevation gain, duration) — test thành công với file thật từ Strava
+- [x] Frontend: routing (`react-router-dom`) + `ProtectedRoute` + `useAuth` (Context/Provider)
+- [x] Frontend: `LoginPage`, `ActivityList`, `ActivityForm`, `GpxUploadForm`, `FitnessPage` — hoạt động end-to-end trên UI thật
+- [x] Style dùng chung qua `index.css` (`@layer components`) — không viết Tailwind trực tiếp trong từng file page
+- [ ] Sync dữ liệu Strava qua OAuth (`integrations/strava.js`, dùng bảng `oauth_connections`) — **code đã viết xong nhưng tạm hoãn test**, vì Strava giới hạn API activity cho tier miễn phí (bắt trả phí hàng tháng); giữ nguyên code, quay lại khi cần hoặc khi có tier phù hợp
+- [ ] Filter/pagination UI ở frontend (backend đã hỗ trợ `type`/`from`/`to`/`page`/`limit`, nhưng `ActivityList` hiện gọi `getActivities()` không truyền tham số nào)
+- [ ] Nút Logout trên UI (hàm `logout()` đã có sẵn trong `useAuth.jsx`, chưa có nút nào gọi tới)
+- [ ] Chọn `type` khi import GPX (hiện mặc định cứng `'run'` ở backend, chưa có input chọn trên `GpxUploadForm`)
 - [ ] Module registry rỗng bên frontend (`modules/index.js`)
-- [ ] Sync dữ liệu Strava (`integrations/strava.js`, dùng bảng `oauth_connections`)
 - [ ] Module coding, blog, books
 - [ ] Trang Dashboard tổng hợp
 
 ## 8. Bước tiếp theo gợi ý
 
-1. Viết `POST /activities` để tạo dữ liệu test thật trong bảng (hiện đang rỗng), theo cùng pattern `routes/` + `requireAuth` đã có
-2. Migrate logic sync Strava từ `strava.js` cũ sang `integrations/strava.js`, dùng Prisma + bảng `oauth_connections` thay vì lưu token rời rạc như code cũ
-3. Dựng `modules/index.js` rỗng bên frontend + `Dashboard.jsx` khung, nối vào endpoint `GET /activities` để thấy dữ liệu chạy thật end-to-end trước khi mở rộng
-4. Định hình sẵn "interface" chuẩn cho 1 module frontend (key, label, route, DashboardWidget...) ngay từ module fitness, để module coding/blog/books sau này theo đúng khuôn, không phải refactor lại registry
+1. Hoàn thiện các phần còn thiếu nhỏ của module fitness: filter/pagination UI, nút Logout, chọn `type` cho GPX import
+2. Dựng `modules/index.js` rỗng bên frontend + định hình "interface" chuẩn cho 1 module (key, label, route, DashboardWidget...) ngay từ module fitness, để module coding/blog/books sau này theo đúng khuôn, không phải refactor lại registry
+3. Bắt đầu module thứ 2 (coding hoặc blog) theo đúng khuôn đã định hình
+4. Quay lại `integrations/strava.js` khi cần — code đã sẵn sàng, chỉ cần test lại luồng OAuth connect/callback/sync khi có tier API phù hợp
 
 ## 9. Ghi chú quan trọng cho lần sau
 
 - **Prisma 7 khác hẳn Prisma 6** ở cách cấu hình kết nối DB — nếu tra cứu tài liệu cũ hoặc hỏi AI mà thấy hướng dẫn có `url` trong `datasource` của `schema.prisma`, đó là hướng dẫn cho bản cũ, không áp dụng được nữa.
 - **Luôn dùng generator `prisma-client-js`** (không phải `prisma-client`) cho project JS thuần như `apps/api` — generator mới chỉ hợp với project chạy TypeScript qua `tsx`/`ts-node`.
 - Nên **commit `schema.prisma` vào Git** ngay sau khi hoàn thiện, tránh lặp lại sự cố mất nội dung model giữa chừng như đã gặp.
+- **Ưu tiên copy-paste trực tiếp từ code mẫu** thay vì gõ lại tay khi triển khai file mới — phần lớn lỗi gặp ở bước 4.7–4.9 (xem mục 6) là lỗi chính tả khi tự đánh lại (nhầm hoa/thường, thiếu ký tự, thiếu dấu đóng ngoặc), không phải lỗi thiết kế.
+- **Thứ tự chẩn đoán lỗi hiệu quả đã đúc kết:** kiểm tra UI (có đổi gì không) → Console (F12, lỗi đỏ) → Network (tab Fetch/XHR, có request không, status code gì) → log backend (terminal `nodemon`) — thu hẹp dần lỗi nằm ở tầng nào trước khi soát từng dòng code, tránh đoán mò ngược từ code ra hiện tượng.
+- **Quy tắc style bắt buộc cho frontend:** mọi class Tailwind định nghĩa trong `index.css` qua `@layer components`, các file `.jsx` chỉ gọi tên class ngắn (`.card`, `.btn-primary`...) — không viết chuỗi utility dài trực tiếp trong page, để đồng bộ và dễ sửa toàn dự án từ 1 chỗ duy nhất.

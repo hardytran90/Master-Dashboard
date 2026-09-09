@@ -2,6 +2,8 @@
 import { Router } from 'express';
 import { prisma } from '../core/prisma.js';
 import { requireAuth } from '../core/middleware/requireAuth.js';
+import { parseGpx } from '../utils/gpx.js';
+import multer from 'multer';
 
 const router = Router();
 
@@ -85,6 +87,44 @@ router.post('/activities', requireAuth, async (req, res) => {
     console.error('POST /activities error: ', err);
     res.status(500).json({ error: 'Cannot create activity!' });
     }
+});
+
+// AFTER DESIGNING GPX FILE UPLOAD FUNCTION
+
+const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 10 * 1024 * 1024 }}); // 10MB limit
+
+router.post('/activities/import-gpx', requireAuth, upload.single('file'), async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ error: 'File GPX is missing!' });
+    }
+
+    const xmlString = req.file.buffer.toString('utf-8');
+    const parsed = parseGpx(xmlString);
+
+    if (parsed.durationSec == null) {
+      return res.status(400).json({
+        error: 'File GPX has no time data, cannot calculate duration data!',
+      });
+    }
+
+    const activity = await prisma.activity.create({
+      data: {
+        userId: req.user.id,
+        type: req.body.type || 'run', // Frontend can send type via another form field, default 'run'
+        activityDate: parsed.activityDate,
+        distanceKm: parsed.distanceKm,
+        durationSec: parsed.durationSec,
+        elevationGainM: parsed.elevationGainM,
+        source: 'gpx',
+      },
+    });
+
+    res.status(201).json({ json: activity });
+  } catch (err) {
+    console.error('POST /activities/import-gpx error:', err);
+    res.status(400).json({ error: err.message || 'Cannot process GPX file!'});
+  }
 });
 
 export default router;
