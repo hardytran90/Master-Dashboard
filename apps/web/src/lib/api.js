@@ -44,3 +44,7 @@ export const api = {
         return request('/activities/import-gpx', { method: 'POST', body: formData });
     },
 };
+
+export function getActiveDays(from, to) {
+    return request(`/activities/active-days?from=${from}&to=${to}`);
+}
