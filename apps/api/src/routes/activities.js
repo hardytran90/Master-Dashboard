@@ -7,6 +7,59 @@ import multer from 'multer';
 
 const router = Router();
 
+const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
+const MAX_RANGE_DAYS = 366;
+
+// GET /api/activities/active-days?from=2025-09-22&to=2026-09-21
+router.get('/activities/active-days', requireAuth, async (req, res) => {
+  try {
+    const { from, to } = req.query;
+    if (!DATE_RE.test(from ?? '') || !DATE_RE.test(to ?? '')) {
+      return res.status(400).json({ error: 'from and to must be in YYYY-MM-DD format' });
+    }
+
+    // activityDate is @db.Date → compare using 00:00 UTC of that date
+    const fromDate = new Date(`${from}T00:00:00Z`);
+    const toDate = new Date(`${to}T00:00:00Z`);
+    const spanDays = (toDate - fromDate) / 86_400_000;
+    if (Number.isNaN(spanDays) || spanDays < 0 || spanDays > MAX_RANGE_DAYS) {
+      return res.status(400).json({ error: `Invalid date range (max ${MAX_RANGE_DAYS} days)` });
+    }
+
+    const rows = await prisma.activity.groupBy({
+      by: ['activityDate', 'type'],
+      where: {
+        userId: req.user.id,
+        type: { in: ['run', 'ride'] },
+        activityDate: { gte: fromDate, lte: toDate },
+      },
+      _count: { _all: true },
+      _sum: { distanceKm: true, durationSec: true },
+    });
+
+    // Merge run + ride of the same day into a single row
+    const byDate = new Map();
+    for (const r of rows) {
+      const date = r.activityDate.toISOString().slice(0, 10);
+      const day = byDate.get(date) ?? { date, count: 0, run: 0, ride: 0, distanceKm: 0, durationSec: 0 };
+      day.count += r._count._all;
+      day[r.type] += r._count._all;
+      day.distanceKm += Number(r._sum.distanceKm ?? 0); // Decimal → number
+      day.durationSec += r._sum.durationSec ?? 0;
+      byDate.set(date, day);
+    }
+
+    const days = [...byDate.values()]
+      .map((d) => ({ ...d, distanceKm: Math.round(d.distanceKm * 100) / 100 }))
+      .sort((a, b) => a.date.localeCompare(b.date));
+
+    res.json({ data: days }); // only includes days WITH activity
+  } catch (err) {
+    console.error('GET /activities/active-days error:', err);
+    res.status(500).json({ error: 'Unable to fetch active-day data' });
+  }
+});
+
 router.get('/activities', requireAuth, async (req, res) => {
   try {
     const userId = req.user.id; // mounted by requireAuth (keep old middleware)

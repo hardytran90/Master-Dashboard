@@ -4,6 +4,8 @@ import { useAuth } from '../../shared/hooks/useAuth';
 import ActivityList from './ActivityList';
 import ActivityForm from './ActivityForm';
 import GpxUploadForm from './GpxUploadForm';
+import ActiveDayHeatmap from './components/ActiveDayHeatmap';
+
 
 export default function FitnessPage() {
     const [refreshKey, setRefreshKey] = useState(0);
@@ -26,6 +28,10 @@ export default function FitnessPage() {
             <div className="card">
                 <ActivityList refreshKey={refreshKey} />
             </div>
+
+            <section className="card">
+                <ActiveDayHeatmap />
+            </section>
         </div>
-    );
+);
 }
