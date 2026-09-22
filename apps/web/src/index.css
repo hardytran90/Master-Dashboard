@@ -4,7 +4,7 @@
 @layer components {
   /* Centered layout for standalone form pages (login...) */
   .page-centered {
-    @apply min-h-screen flex items-center justify-center bg-gray-50;
+    @apply min-h-screen flex items-center justify-center bg-slate-50;
   }
 
   /* Main content container for pages after login */
@@ -13,7 +13,7 @@
   }
 
   .page-title {
-    @apply text-xl font-semibold text-gray-800;
+    @apply text-xl font-semibold text-slate-800;
   }
 
   /* FULL-HEIGHT GRADIENT BACKGROUND FOR MY FITNESS PAGE */
@@ -24,16 +24,16 @@
 
   /* Card — white rounded box, used for forms, lists, any content block */
   .card {
-    @apply bg-white p-4 rounded-lg border border-gray-200;
+    @apply bg-white p-4 rounded-lg border border-slate-200;
   }
 
   .card-title {
-    @apply text-sm font-semibold text-gray-800;
+    @apply text-sm font-semibold text-slate-800;
   }
 
   /* Form */
   .form-input {
-    @apply w-full border border-gray-300 rounded px-3 py-2 text-sm
+    @apply w-full border border-slate-300 rounded px-3 py-2 text-sm
            focus:outline-none focus:ring-2 focus:ring-gray-900/10;
   }
 
@@ -52,13 +52,13 @@
 
   /* Button */
   .btn-primary {
-    @apply w-full bg-gray-900 text-white rounded py-2 text-sm
-           disabled:opacity-50 hover:bg-gray-800 transition-colors;
+    @apply w-full bg-slate-900 text-white rounded py-2 text-sm
+           disabled:opacity-50 hover:bg-slate-800 transition-colors;
   }
 
   .btn-secondary {
-    @apply bg-white border border-gray-300 text-gray-700 rounded px-3 py-1.5 text-sm
-         hover:bg-gray-50 transition-colors;
+    @apply bg-white border border-slate-300 text-slate-700 rounded px-3 py-1.5 text-sm
+         hover:bg-slate-50 transition-colors;
   }
 
   /* Small badge showing data source (manual/strava/gpx) */

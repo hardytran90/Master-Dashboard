@@ -118,7 +118,7 @@ export default function ActiveDayHeatmap( { refreshKey = 0 }) {
             )}
 
             <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">
-                Each color square is a day with at least 1 activity. Darker color means longer activities spent. 
+                Each color square is a day with at least 1 activity. Lighter color means longer activities spent. 
             </p>
         </div>
     );
