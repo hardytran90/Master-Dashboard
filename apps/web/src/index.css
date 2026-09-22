@@ -16,6 +16,12 @@
     @apply text-xl font-semibold text-gray-800;
   }
 
+  /* FULL-HEIGHT GRADIENT BACKGROUND FOR MY FITNESS PAGE */
+  .fitness-page-bg {
+    @apply min-h-screen;
+    background: linear-gradient(135deg, #FFCD3C 0%, #FF9A1F 28%, #F2542D 52%, #932B52 76%, #3D1230 100%);
+  }
+
   /* Card — white rounded box, used for forms, lists, any content block */
   .card {
     @apply bg-white p-4 rounded-lg border border-gray-200;
