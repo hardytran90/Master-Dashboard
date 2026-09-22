@@ -15,12 +15,13 @@ export default function GpxUploadForm({ onImported }) {
     }
 
     async function handleUpload() {
+        console.log(selectedFile);
         if (!selectedFile) return;
 
         setError('');
         setStatus('uploading');
         try {
-            await api.importGPX(selectedFile);
+            await api.importGpx(selectedFile);
             setStatus('done');
             setSelectedFile(null);
             if (inputRef.current) inputRef.current.value = '';

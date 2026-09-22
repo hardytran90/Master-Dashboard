@@ -116,6 +116,7 @@ export default function Heatmap({
     return (
         <div>
             <div ref={scrollRef} className="overflow-x-auto pb-1" onScroll={() => setTip(null)}>
+                <div className='inline-flex gap-2 pr-1'>
                 {/* DAY-OF-WEEK LABELS */}
                 <div
             className="grid text-[10px] leading-[12px] text-gray-500 dark:text-gray-400"
@@ -169,6 +170,7 @@ export default function Heatmap({
               )}
             </div>
           </div>
+              </div>
         </div>
 
       {/* Legend */}

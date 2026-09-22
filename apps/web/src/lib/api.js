@@ -38,7 +38,7 @@ export const api = {
     createActivity: (payload) =>
         request('/activities', { method: 'POST', body: JSON.stringify(payload) }),
 
-    importGPX: (file) => {
+    importGpx: (file) => {
         const formData = new FormData();
         formData.append('file', file);
         return request('/activities/import-gpx', { method: 'POST', body: formData });
