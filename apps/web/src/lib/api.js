@@ -37,10 +37,17 @@ export const api = {
 
     createActivity: (payload) =>
         request('/activities', { method: 'POST', body: JSON.stringify(payload) }),
+    
+    updateActivity: (id, data) => 
+        request(`/activities/${id}`, { method: 'PATCH', body: JSON.stringify(data) }),
+
+    deleteActivity: (id) => 
+        request(`/activities/${id}`, { method: 'DELETE' }),
 
     importGpx: (file) => {
         const formData = new FormData();
         formData.append('file', file);
+        formData.append('type', type);
         return request('/activities/import-gpx', { method: 'POST', body: formData });
     },
 };

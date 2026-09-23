@@ -142,6 +142,70 @@ router.post('/activities', requireAuth, async (req, res) => {
     }
 });
 
+const EDITABLE_FIELDS = ['type', 'activityDate', 'distanceKm', 'durationSec', 'elevationGainM'];
+
+// PATCH /api/activities/123
+router.patch('/activities/:id', requireAuth, async ( req, res) => { 
+  try { 
+    const id = Number(req.params.id);
+    if (!Number.isInteger(id)) {
+      return res.status(400).json({ error: 'Invalid activity id' });
+    }
+
+    // Ownership check BEFORE updating — without this, any logged-in user
+    // could edit another user's activity just by guessing the id.
+    const existing = await prisma.activity.findFirst({
+      where: { id, userId: req.user.id },
+    });
+    if (!existing) {
+      return res.status(404).json({ error: 'Activity not found' });
+    }
+
+    const data = {};
+    for (const field of EDITABLE_FIELDS) {
+      if (req.body[field] === undefined) continue;
+      if (field === 'activityDate') {
+        data.activityDate = new Date(`${req.body.activityDate}T00:00:00Z`);
+      } else if (field === 'distanceKm' || field === 'durationSec' || field === 'elevationGainM') {
+        data[field] = req.body[field] === '' || req.body[field] === null ? null : Number(req.body[field]);
+      } else {
+        data[field] = req.body[field];
+      }
+    }
+
+    const updated = await prisma.activity.update({ where: { id }, data });
+    res.json({ data: updated });
+  } catch (err) {
+    console.error('PATCH /activities/:id error:', err);
+    res.status(500).json({ error: 'Unable to update activity' });
+  }
+});
+
+
+// DELETE /api/activities/123
+router.delete('/activities/:id', requireAuth, async (req, res) => {
+  try {
+    const id = Number(req.params.id);
+    if (!Number.isInteger(id)) {
+      return res.status(400).json({ error: 'Invalid activity id' });
+    }
+
+    // Same ownership check as PATCH - required before delete too
+    const existing = await prisma.activity.findFirst({
+      where: { id, userId: req.user.id },
+    });
+    if (!existing) {
+      return res.status(404).json({ error: 'Activity not found' });
+    }
+
+    await prisma.activity.delete({ where: { id }});
+    res.json({ data: { id }});
+  } catch (err) {
+    console.error('DELETE /activities/:id error:', err);
+    res.status(500).json({ error: 'Unable to delete activity' });
+  }
+});
+
 // AFTER DESIGNING GPX FILE UPLOAD FUNCTION
 
 const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 10 * 1024 * 1024 }}); // 10MB limit

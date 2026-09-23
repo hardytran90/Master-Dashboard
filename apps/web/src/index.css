@@ -19,7 +19,7 @@
   /* FULL-HEIGHT GRADIENT BACKGROUND FOR MY FITNESS PAGE */
   .fitness-page-bg {
     @apply min-h-screen;
-    background: linear-gradient(135deg, #FFCD3C 0%, #FF9A1F 28%, #F2542D 52%, #932B52 76%, #3D1230 100%);
+    background: linear-gradient(135deg, #b2d428 10%, #FF9A1F 28%, #F2542D 52%, #932B52 76%, #3D1230 100%);
   }
 
   /* Card — white rounded box, used for forms, lists, any content block */
@@ -34,12 +34,12 @@
   /* Form */
   .form-input {
     @apply w-full border border-slate-300 rounded px-3 py-2 text-sm
-           focus:outline-none focus:ring-2 focus:ring-gray-900/10;
+           focus:outline-none focus:ring-2 focus:ring-slate-700/10;
   }
 
   .form-select {
-    @apply border border-gray-300 rounded px-2 py-1.5 text-sm
-           focus:outline-none focus:ring-2 focus:ring-gray-900/10;
+    @apply border border-slate-300 rounded px-2 py-1.5 text-sm
+           focus:outline-none focus:ring-2 focus:ring-slate-700/10;
   }
 
   .form-error {
@@ -47,23 +47,23 @@
   }
 
   .form-hint {
-    @apply text-xs text-gray-100;
+    @apply text-xs text-slate-400;
   }
 
   /* Button */
   .btn-primary {
     @apply w-full bg-slate-900 text-white rounded py-2 text-sm
-           disabled:opacity-50 hover:bg-slate-800 transition-colors;
+           disabled:opacity-50 hover:bg-slate-600 transition-colors;
   }
 
   .btn-secondary {
-    @apply bg-white border border-slate-300 text-slate-700 rounded px-3 py-1.5 text-sm
-         hover:bg-slate-50 transition-colors;
+    @apply bg-slate-900 border border-slate-300 text-white rounded px-3 py-1.5 text-sm
+         hover:bg-slate-600 transition-colors;
   }
 
   /* Small badge showing data source (manual/strava/gpx) */
   .badge {
-    @apply text-xs px-1.5 py-0.5 bg-gray-100 rounded uppercase text-gray-600;
+    @apply text-xs px-1.5 py-0.5 bg-slate-100 rounded uppercase text-slate-600;
   }
 
   /* Status messages */
@@ -72,10 +72,10 @@
   }
 
   .status-loading {
-    @apply text-xs text-gray-500;
+    @apply text-xs text-slate-500;
   }
 
   .empty-state {
-    @apply text-sm text-gray-500;
+    @apply text-sm text-slate-500;
   }
 }

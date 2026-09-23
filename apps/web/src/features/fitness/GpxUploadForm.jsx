@@ -3,6 +3,7 @@ import { api } from '../../lib/api';
 
 export default function GpxUploadForm({ onImported }) {
     const [selectedFile, setSelectedFile] = useState(null);
+    const [type, setType] = useState('run');
     const [error, setError] = useState('');
     const [status, setStatus] = useState('idle'); //idle | uploading | done
     const inputRef = useRef(null);
@@ -15,7 +16,6 @@ export default function GpxUploadForm({ onImported }) {
     }
 
     async function handleUpload() {
-        console.log(selectedFile);
         if (!selectedFile) return;
 
         setError('');
@@ -37,6 +37,15 @@ export default function GpxUploadForm({ onImported }) {
             <h2 className="card-title">Import file GPX</h2>
             <p className="form-hint">Download file .gpx from Strava.</p>
             {error && <p className="form-error">{error}</p>}
+
+            <select
+            value={type}
+            onChange={(e) => setType(e.target.value)}
+            disabled={status === 'uploading'}
+            className='"form-select'>
+                <option value="run">Run</option>
+                <option value="ride">Ride</option>
+            </select>
 
             <input 
             ref={inputRef}
