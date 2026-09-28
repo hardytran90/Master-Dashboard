@@ -44,7 +44,7 @@ export const api = {
     deleteActivity: (id) => 
         request(`/activities/${id}`, { method: 'DELETE' }),
 
-    importGpx: (file, type='run') => {
+    importGpx: (file) => {
         const formData = new FormData();
         formData.append('file', file);
         formData.append('type', type);

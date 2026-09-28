@@ -14,6 +14,37 @@ function haversineMeters(lat1, lon1, lat2, lon2) {              //lat: latitude 
   return 2 * R * Math.asin(Math.sqrt(a));
 }
 
+// Above this average speed (km/h) an activity is treated as a ride
+const RIDE_MIN_KMH = 14;
+ 
+// Turn a raw <type> or <name> value into 'run' | 'ride' | null
+function normalizeType(raw) {
+    if (raw == null) return null;
+    const v = String(raw).toLowerCase().trim();
+    if (v === '9') return 'run'; // older Strava exports use numeric codes
+    if (v === '1') return 'ride';
+    if (/ride|cycl|bik|đạp/.test(v)) return 'ride'; // "cycling", "Morning Ride", "Đạp xe buổi sáng"
+    if (/run|jog|chạy/.test(v)) return 'run'; // "running", "Morning Run", "Chạy bộ buổi sáng"
+    return null;
+}
+ 
+// Priority: <trk><type> → <trk><name> / <metadata><name> → average speed
+function detectType(gpx, tracks, distanceMeters, durationSec) {
+    for (const trk of tracks) {
+        const t = normalizeType(trk?.type);
+        if (t) return t;
+    }
+    for (const name of [...tracks.map((trk) => trk?.name), gpx.metadata?.name]) {
+        const t = normalizeType(name);
+        if (t) return t;
+    }
+    if (durationSec > 0) {
+        const kmh = distanceMeters / 1000 / (durationSec / 3600);
+        return kmh >= RIDE_MIN_KMH ? 'ride' : 'run';
+    }
+    return 'run';
+}
+
 export function parseGpx(xmlString) {
     const doc = parser.parse(xmlString);
     const gpx = doc.gpx;
@@ -68,5 +99,6 @@ export function parseGpx(xmlString) {
         durationSec, 
         elevationGainM: Math.round(elevationGainM),
         activityDate: firstTime || new Date(),
+        type: parsed.type,
     };
 }
