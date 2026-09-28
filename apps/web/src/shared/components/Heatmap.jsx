@@ -108,7 +108,7 @@ export default function Heatmap({
 
     const showTip = (e, text) => {
         const r = e.currentTarget.getBoundingClientRect();
-        setTip({ x: r.left + e.width / 2, y: r.top, text });
+        setTip({ x: r.left + r.width / 2, y: r.top, text });
     };
 
     const gridWidth = weeks.length * STEP - GAP;
