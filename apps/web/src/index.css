@@ -61,6 +61,43 @@
          hover:bg-slate-600 transition-colors;
   }
 
+    /* Card that stretches to its grid row height, so the footer can sit at the bottom */
+  .card-fill {
+    @apply flex flex-col gap-3 h-full;
+  }
+
+  .card-footer {
+    @apply mt-auto pt-2 space-y-2;
+  }
+
+  /* File picker — bordered file-name box on top, Choose File button below */
+  .file-picker {
+    @apply flex flex-col items-start gap-2;
+  }
+
+  /* Same look as .form-input (e.g. the Elevation gain field) */
+  .file-picker-name {
+    @apply w-full border border-slate-300 rounded px-3 py-2 text-sm text-slate-400 bg-white truncate;
+  }
+
+  .file-picker-name-selected {
+    @apply w-full border border-slate-300 rounded px-3 py-2 text-sm text-slate-800 bg-white truncate;
+  }
+
+  .file-picker-btn {
+    @apply bg-slate-300 border border-slate-400 text-slate-800 rounded px-3 py-1.5
+           text-sm font-medium hover:bg-slate-400 transition-colors
+           focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-500
+           disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  /* Upload: light gray until a file is chosen, then dark and clickable */
+  .btn-upload {
+    @apply w-full rounded py-2 text-sm transition-colors
+           bg-slate-700 text-white hover:bg-slate-600
+           disabled:bg-slate-200 disabled:text-slate-400 disabled:cursor-not-allowed;
+  }
+
   /* Small badge showing data source (manual/strava/gpx) */
   .badge {
     @apply text-xs px-1.5 py-0.5 bg-slate-100 rounded uppercase text-slate-600;
@@ -79,3 +116,83 @@
     @apply text-sm text-slate-500;
   }
 }
+
+/* Style for 4 modules: Overview / Compare / Goals / Daily */
+
+.sport-run  { --accent: #c6ec2c; --accent-soft: rgba(198, 236, 44, 0.14); --accent-line: rgba(198, 236, 44, 0.45); }
+.sport-ride { --accent: #22c3e6; --accent-soft: rgba(34, 195, 230, 0.14); --accent-line: rgba(34, 195, 230, 0.45); }
+
+.fx-panel { background: #161616; border: 1px solid #2a2a2a; border-radius: 14px; padding: 20px; color: #e5e5e5; }
+.fx-panel-head { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-start; gap: 12px; margin-bottom: 16px; }
+.fx-panel-actions { display: flex; flex-direction: column; align-items: flex-end; gap: 8px; }
+.fx-title { font-size: 1.6rem; font-weight: 800; letter-spacing: 0.02em; text-transform: uppercase; color: #fff; line-height: 1.1; }
+.fx-sub { font-size: 11px; color: #8a8a8a; margin-top: 6px; line-height: 1.5; }
+
+.fx-tabs { display: inline-flex; background: #0e0e0e; border: 1px solid #2a2a2a; border-radius: 999px; padding: 3px; }
+.fx-tab { font-size: 11px; font-weight: 600; color: #9a9a9a; padding: 4px 10px; border-radius: 999px; }
+.fx-tab:hover { color: #e5e5e5; }
+.fx-tab[aria-pressed="true"] { background: #2b2b2b; color: #fff; }
+.fx-tab:focus-visible, .fx-btn:focus-visible { outline: 2px solid #fff; outline-offset: 1px; }
+
+.fx-btn { font-size: 11px; font-weight: 700; text-transform: uppercase; border-radius: 999px; padding: 5px 14px; }
+.fx-btn-accent { background: #c6ec2c; color: #111; }
+.fx-btn-accent:hover { background: #d6f55a; }
+.fx-btn-ghost { background: #2b2b2b; color: #e5e5e5; }
+
+.fx-grid-2 { display: grid; gap: 12px; grid-template-columns: 1fr; }
+@media (min-width: 768px) { .fx-grid-2 { grid-template-columns: 1fr 1fr; } }
+.fx-stack { display: grid; gap: 8px; align-content: start; }
+.fx-pair { display: grid; gap: 8px; grid-template-columns: 1fr 1fr; }
+
+/* Sport header */
+.fx-sport { display: flex; align-items: center; gap: 10px; }
+.fx-sport-bar { padding: 10px 12px; border-radius: 10px; border: 1px solid #2a2a2a; background: linear-gradient(90deg, var(--accent-soft), transparent 75%); }
+.fx-sport-icon { width: 32px; height: 32px; flex: none; border-radius: 999px; display: grid; place-items: center; border: 1.5px solid var(--accent); color: var(--accent); background: rgba(0, 0, 0, 0.35); }
+.fx-sport-name { color: var(--accent); font-weight: 800; font-size: 14px; letter-spacing: 0.06em; text-transform: uppercase; }
+.fx-accent { color: var(--accent); }
+
+/* Stat tiles */
+.fx-stat { background: #101010; border: 1px solid #242424; border-radius: 8px; padding: 10px 12px; }
+.fx-stat-label { font-size: 10px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: #8a8a8a; }
+.fx-stat-value { font-size: 1.15rem; font-weight: 700; color: #fff; margin-top: 4px; }
+
+/* Compare */
+.fx-compare { border: 1px solid var(--accent-line); border-radius: 8px; overflow: hidden; background: #111; }
+.fx-compare-head { padding: 10px 12px; border-bottom: 1px solid var(--accent-line); background: linear-gradient(180deg, var(--accent-soft), transparent); }
+.fx-compare-table { width: 100%; font-size: 12px; border-collapse: collapse; }
+.fx-compare-table th, .fx-compare-table td { padding: 12px; text-align: center; }
+.fx-compare-table th { font-weight: 500; text-transform: uppercase; color: #ddd; }
+.fx-compare-table th[scope="row"] { text-align: left; font-weight: 700; color: #fff; }
+.fx-compare-table td { font-weight: 700; color: #fff; }
+.fx-compare-table td.fx-accent { color: var(--accent); }
+
+/* Goals */
+.fx-card { background: #111; border: 1px solid #2a2a2a; border-radius: 8px; padding: 14px; }
+.fx-bar { height: 8px; background: #262626; border-radius: 999px; overflow: hidden; margin: 14px 0 12px; }
+.fx-bar > span { display: block; height: 100%; background: var(--accent); border-radius: inherit; transition: width 0.4s ease; }
+.fx-kv { font-size: 13px; color: #e5e5e5; line-height: 1.9; }
+.fx-dots { display: flex; gap: 5px; }
+.fx-dot { width: 14px; height: 5px; border-radius: 3px; background: #333; }
+.fx-dot.on { background: var(--accent); }
+.fx-muted { color: #8a8a8a; font-size: 13px; }
+.fx-input { width: 100%; background: #0e0e0e; border: 1px solid #333; border-radius: 6px; padding: 6px 8px; color: #fff; font-size: 13px; }
+.fx-details summary { cursor: pointer; font-size: 11px; color: #8a8a8a; margin-top: 10px; }
+
+/* Daily chart */
+.fx-chart { display: grid; grid-template-columns: auto 1fr; gap: 8px; font-size: 10px; color: #9a9a9a; }
+.fx-chart-y { height: 200px; display: flex; flex-direction: column; justify-content: space-between; text-align: right; }
+.fx-chart-y span { line-height: 0; white-space: nowrap; }
+.fx-chart-plot {
+  height: 200px; display: flex; align-items: flex-end;
+  border-bottom: 1px solid #333;
+  background-image: linear-gradient(to top, #262626 1px, transparent 1px);
+  background-size: 100% calc(100% / var(--rows));
+  background-position: bottom;
+}
+.fx-chart-col { flex: 1; height: 100%; display: flex; align-items: flex-end; justify-content: center; border-left: 1px solid #1f1f1f; }
+.fx-chart-bar { width: 60%; max-width: 22px; background: var(--accent); border-radius: 3px 3px 0 0; }
+.fx-chart-x { display: flex; margin-top: 8px; }
+.fx-chart-x span { flex: 1; text-align: center; white-space: nowrap; }
+@media (max-width: 640px) { .fx-chart-x.dense span:nth-child(even) { visibility: hidden; } }
+
+@media (prefers-reduced-motion: reduce) { .fx-bar > span { transition: none; } }

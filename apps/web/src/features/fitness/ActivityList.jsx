@@ -3,6 +3,19 @@ import { api } from '../../lib/api';
 
 const TYPE_OPTIONS = ['run', 'ride'];
 
+// URL to link to detail activities in Strava
+const stravaUrl = (id) => `https://www.strava.com/activities/${id}`;
+
+// Receive link with format https://www.strava.com/activities/1234567890 (might includes /overview, ?query...)
+
+function parseStravaId(input) {
+    const result = input.trim();
+    if (!result) return '';
+    if (/^d{1,20}$/.test(result)) return result;
+    const match = result.match(/strava\.com\/activities\/(\d{1,20})/);
+    return match ? match[1] : null;
+}
+
 export default function ActivityList({ refreshKey }) {
     const [activities, setActivities] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -45,6 +58,12 @@ export default function ActivityList({ refreshKey }) {
     }
 
     async function saveEdit(id) {
+        const stravaId = parseStravaId(editForm.stravaLink);
+        if (stravaId === null) {
+            setEditError('Strava link must look like https://www.strava.com/activities/123456789');
+            return;
+        }
+
         setSaving(true);
         setEditError('');
         try {
@@ -54,10 +73,12 @@ export default function ActivityList({ refreshKey }) {
                 distanceKm: Number(editForm.distanceKm),
                 durationSec: Number(editForm.durationSec),
                 elevationGainM: editForm.elevationGainM === '' ? null : Number(editForm.elevationGainM),
+                stravaActivityId: stravaId === '' ? null : stravaId,
             });
             setActivities((prev) => prev.map((a) => (a.id === id ? res.data : a)));
             setEditingId(null);
             setEditForm(null);
+            onChange?.();
         } catch (err) {
             setEditError(err.message);
         } finally {
@@ -70,6 +91,7 @@ export default function ActivityList({ refreshKey }) {
         try {
             await api.deleteActivity(id);
             setActivities((prev) => prev.filter((a) => a.id !== id));
+            onChange?.();
         } catch (err) {
             setError(err.message);
         }
@@ -131,8 +153,16 @@ export default function ActivityList({ refreshKey }) {
                                 placeholder="Elevation (m, optional)"
                                 className="form-input"
                             />
+                            <input
+                                type="text"
+                                inputMode="url"
+                                value={editForm.stravaLink}
+                                onChange={(e) => updateEditField('stravaLink', e.target.value)}
+                                placeholder="Strava link (optional)"
+                                className="form-input"
+                            />
                         </div>
-                        <div>
+                        <div className='flex gap-2'>
                             <button
                                 type="button"
                                 onClick={() => saveEdit(a.id)}
@@ -164,6 +194,22 @@ export default function ActivityList({ refreshKey }) {
                                 {a.distanceKm} km · {Math.round(a.durationSec / 60)} minutes
                                 {a.source !== 'manual' && <span className="badge ml-2">{a.source}</span>}
                             </span>
+                            {a.stravaActivityId ? (
+                               <a
+                                href={stravaUrl(a.stravaActivityId)}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-xs text-orange-600 hover:text-orange-800 underline"
+                                title="Open this activity on Strava" >
+                                    Detail
+                               </a>    
+                            ) : (
+                                <span
+                                className='text-xs text-slate-300 cursor-not-allowed'
+                                title="Not linked to Strava yet. Click edit and paste the Strava link." >
+                                    Detail
+                                </span>
+                            )}
                             <button
                                 type="button"
                                 onClick={() => startEdit(a)}
@@ -180,7 +226,8 @@ export default function ActivityList({ refreshKey }) {
                             </button>
                         </div>
                     </li>
-                ))}
+                ),
+                )}
             </ul> 
             )}
         </div>

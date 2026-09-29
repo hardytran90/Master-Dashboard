@@ -35,6 +35,9 @@ export const api = {
         return request(`/activities${query ? `?${query}` : ''}`);
     },
 
+    getActivityStats: (from, to) => 
+        request(`/activities/stats?from=${from}&to=${to}`),
+
     createActivity: (payload) =>
         request('/activities', { method: 'POST', body: JSON.stringify(payload) }),
     
@@ -47,7 +50,6 @@ export const api = {
     importGpx: (file) => {
         const formData = new FormData();
         formData.append('file', file);
-        formData.append('type', type);
         return request('/activities/import-gpx', { method: 'POST', body: formData });
     },
 };

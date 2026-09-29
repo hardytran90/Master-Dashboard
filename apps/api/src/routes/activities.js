@@ -9,6 +9,7 @@ const router = Router();
 
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
 const MAX_RANGE_DAYS = 366;
+const MAX_STATS_RANGE_DAYS = 800;
 
 // GET /api/activities/active-days?from=2025-09-22&to=2026-09-21
 router.get('/activities/active-days', requireAuth, async (req, res) => {
@@ -57,6 +58,39 @@ router.get('/activities/active-days', requireAuth, async (req, res) => {
   } catch (err) {
     console.error('GET /activities/active-days error:', err);
     res.status(500).json({ error: 'Unable to fetch active-day data' });
+  }
+});
+
+router.get('/activities/stats', requireAuth, async (req, res) => { 
+  try {
+    const { from, to } = req.querry;
+    if (!DATE_RE.test(from ?? '') || !DATE_RE.test(to ?? '')) {
+      return res.status(400).json({ error: 'from/to must be YYYY-MM-DD' });
+    }
+    const start = new Date(`${from}T00:00:00Z`);
+    const end = new Date(`${to}T23:59:59.999Z`);
+    const days = (end - start) / 86_400_000;
+    if (days < 0 || days > MAX_STATS_RANGE_DAYS) {
+      return res.status(400).json({ error: `Range must be 0-${MAX_STATS_RANGE_DAYS} days` });
+    }
+
+    const rows = await prisma.activity.findMany({
+      where: { userId: req.user.id, activityDate: { gte: start, lte: end }},
+      select: {
+        id: true,
+        type: true, 
+        activityDate: true,
+        distanceKm: true,
+        durationSec: true,
+        elevationGainM: true,
+      },
+      orderBy: { activityDate: 'asc' },
+    });
+
+    res.json({ data: rows });
+  } catch (err) {
+    console.error('GET /activities/stats error:', err);
+    res.status(500).json({ error: 'Could not load activity stats' });
   }
 });
 
@@ -142,7 +176,7 @@ router.post('/activities', requireAuth, async (req, res) => {
     }
 });
 
-const EDITABLE_FIELDS = ['type', 'activityDate', 'distanceKm', 'durationSec', 'elevationGainM'];
+const EDITABLE_FIELDS = ['type', 'activityDate', 'distanceKm', 'durationSec', 'elevationGainM', 'stravaActivityId'];
 
 // PATCH /api/activities/123
 router.patch('/activities/:id', requireAuth, async ( req, res) => { 
@@ -164,6 +198,18 @@ router.patch('/activities/:id', requireAuth, async ( req, res) => {
     const data = {};
     for (const field of EDITABLE_FIELDS) {
       if (req.body[field] === undefined) continue;
+      if (field === 'stravaActivityId') {
+        const act = req.body.stravaActivityId;
+        if (act === null || act === '') {
+          data.stravaActivityId = null;
+        } else if (/^d{1,20}$/.test(String(act))) {
+          data.stravaActivityId = String(v);
+        } else {
+          return res.status(400).json({ error: 'Invalid Strava activity id' });
+        }
+        continue;
+      }
+
       if (field === 'activityDate') {
         data.activityDate = new Date(`${req.body.activityDate}T00:00:00Z`);
       } else if (field === 'distanceKm' || field === 'durationSec' || field === 'elevationGainM') {
@@ -176,6 +222,9 @@ router.patch('/activities/:id', requireAuth, async ( req, res) => {
     const updated = await prisma.activity.update({ where: { id }, data });
     res.json({ data: updated });
   } catch (err) {
+    if (err.code === 'P2002') {
+      return res.status(409).json({ error: 'This activity is already linked to another activity' });
+    }
     console.error('PATCH /activities/:id error:', err);
     res.status(500).json({ error: 'Unable to update activity' });
   }
@@ -228,7 +277,7 @@ router.post('/activities/import-gpx', requireAuth, upload.single('file'), async 
     const activity = await prisma.activity.create({
       data: {
         userId: req.user.id,
-        type: req.body.type || 'run', // Frontend can send type via another form field, default 'run'
+        type: parsed.type, // auto-detected in utils/gpx.js
         activityDate: parsed.activityDate,
         distanceKm: parsed.distanceKm,
         durationSec: parsed.durationSec,
@@ -237,7 +286,7 @@ router.post('/activities/import-gpx', requireAuth, upload.single('file'), async 
       },
     });
 
-    res.status(201).json({ json: activity });
+    res.status(201).json({ data: activity });
   } catch (err) {
     console.error('POST /activities/import-gpx error:', err);
     res.status(400).json({ error: err.message || 'Cannot process GPX file!'});

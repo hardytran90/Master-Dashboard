@@ -99,6 +99,6 @@ export function parseGpx(xmlString) {
         durationSec, 
         elevationGainM: Math.round(elevationGainM),
         activityDate: firstTime || new Date(),
-        type: parsed.type,
+        type: detectType(gpx, tracks, distanceMeters, durationSec),
     };
 }

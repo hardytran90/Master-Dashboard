@@ -3,10 +3,11 @@ import { api } from '../../lib/api';
 
 export default function GpxUploadForm({ onImported }) {
     const [selectedFile, setSelectedFile] = useState(null);
-    const [type, setType] = useState('run');
     const [error, setError] = useState('');
     const [status, setStatus] = useState('idle'); //idle | uploading | done
     const inputRef = useRef(null);
+
+    const isUploading = status === 'uploading';
 
     function handleFileChange(e) {
         const file = e.target.files?.[0] || null;
@@ -35,43 +36,46 @@ export default function GpxUploadForm({ onImported }) {
     return (
         <div className="card space-y-3">
             <h2 className="card-title">Import file GPX</h2>
-            <p className="form-hint">Download file .gpx from Strava.</p>
             {error && <p className="form-error">{error}</p>}
 
-            <select
-            value={type}
-            onChange={(e) => setType(e.target.value)}
-            disabled={status === 'uploading'}
-            className='"form-select'>
-                <option value="run">Run</option>
-                <option value="ride">Ride</option>
-            </select>
-
+            {/* Native input stays hidden; the button below opens it */}
             <input 
-            ref={inputRef}
-            type="file"
-            accept=".gpx"
-            onChange={handleFileChange}
-            disabled={status === 'uploading'}
-            className="text-sm"
-             />
+                ref={inputRef}
+                type="file"
+                accept=".gpx"
+                onChange={handleFileChange}
+                disabled={isUploading}
+                className="hidden"
+            />
 
-            {selectedFile && (
-                <p className="form-hint">
-                    Selected: <span className="text-gray-700">{selectedFile.name}</span>
+            <div className='file-picker'>
+                <div className={selectedFile ? 'file-picker-name-selected' : 'file-picker-name'}>
+                    {selectedFile ? selectedFile.name : 'No file chosen'}
+                </div>
+                <button
+                    type="button"
+                    onClick={() => inputRef.current?.click()}
+                    disabled={isUploading}
+                    className='file-picker-btn'
+                >
+                    Choose File
+                </button>
+                <p className='form-hint'>
+                    Works for .gpx files 10MB or smaller.
                 </p>
-            )}
+            </div>
 
-            <button
-            type="button"
-            onClick={handleUpload}
-            disabled={!selectedFile || status === 'uploading'}
-            className='btn-primary'
-            >
-                {status === 'uploading' ? 'Processing...' : 'Upload'}
-            </button>
-
-             {status === 'done' && <p className="status-success">Import done.</p>}
+            <div className='card-footer'>
+                {status === 'done' && <p className="status-success">Import done.</p>}
+                <button
+                    type="button"
+                    onClick={handleUpload}
+                    disabled={!selectedFile || isUploading}
+                    className='btn-upload'
+                >
+                    {isUploading ? 'Processing...' : 'Upload'}
+                </button>
+            </div>
         </div>
     );
 }
