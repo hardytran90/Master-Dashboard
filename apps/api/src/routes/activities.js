@@ -63,7 +63,7 @@ router.get('/activities/active-days', requireAuth, async (req, res) => {
 
 router.get('/activities/stats', requireAuth, async (req, res) => { 
   try {
-    const { from, to } = req.querry;
+    const { from, to } = req.query;
     if (!DATE_RE.test(from ?? '') || !DATE_RE.test(to ?? '')) {
       return res.status(400).json({ error: 'from/to must be YYYY-MM-DD' });
     }

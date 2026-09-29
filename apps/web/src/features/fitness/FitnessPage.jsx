@@ -2,11 +2,9 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../shared/hooks/useAuth';
 import ActivityList from './ActivityList';
-import ActivityForm from './ActivityForm';
 import GpxUploadForm from './GpxUploadForm';
 import ActiveDayHeatmap from './components/ActiveDayHeatmap';
 import FitnessDashboard from './components/FitnessDashboard';
-
 
 export default function FitnessPage() {
     const [refreshKey, setRefreshKey] = useState(0);
@@ -30,13 +28,10 @@ export default function FitnessPage() {
                     
                 <FitnessDashboard refreshKey={refreshKey} />
 
-                <div className='grid grid-cols-2 gap-4'>
-                    <GpxUploadForm onImported={refresh} />
-                    <ActivityForm onCreated={refresh}/>
-                </div>
-
+                <GpxUploadForm onImported={refresh} />
+                
                 <section className="card">
-                    <ActiveDayHeatmap refreshKey={refreshKey}/>
+                    <ActiveDayHeatmap refreshKey={refreshKey} />
                 </section>
 
                 <div className="card">
@@ -44,5 +39,5 @@ export default function FitnessPage() {
                 </div>
             </div>
         </div>
-);
+    );
 }

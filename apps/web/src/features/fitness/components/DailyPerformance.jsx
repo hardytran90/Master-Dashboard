@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { addDays, startOfWeek, toKey } from '../stats';
-import { PaneHead, Tabs } from './fitnessUi';
+import { PanelHead, Tabs } from './fitnessUi';
 
 const MODES = [
   { id: 'daily', label: 'Daily' },
@@ -22,7 +22,7 @@ function buildBuckets(mode, today = new Date()) {
         const year = today.getFullYear();
         const month = today.getMonth();
         const day = new Date(year, month + 1, 0).getDate();
-        return Array.from({ length: n }, (_, i) => {
+        return Array.from({ length: day }, (_, i) => {
             const key = toKey(new Date(year, month, i + 1, 12));
             return { from: key, to: key, label: String(i + 1), title: key };
         });
