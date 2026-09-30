@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react';
 import { api } from '../../lib/api';
+import { SportIcon } from './components/fitnessUi';
+import { formatPace, formatSpeed } from './stats';
 
 const TYPE_OPTIONS = ['run', 'ride'];
 
@@ -7,6 +9,40 @@ const TYPE_OPTIONS = ['run', 'ride'];
 const stravaUrl = (id) => `https://www.strava.com/activities/${id}`;
 
 // Receive link with format https://www.strava.com/activities/1234567890 (might includes /overview, ?query...)
+function formatMinutes(sec) {
+    const total = Math.round((Number(sec) || 0) / 60);
+    if (total < 60) return `${total} minutes`;
+    const h = Math.floor(total / 60);
+    const m = total % 60;
+    return m ? `${h}h ${m} minutes` : `${h}h`;
+}
+
+// Run → pace (min/km), Ride → speed (km/h)
+function formatAvg(a) {
+    const km = Number(a.distanceKm) || 0;
+    const sec = Number(a.durationSec) || 0;
+    if (!km || !sec) return { value: '—', label: a.type === 'ride' ? 'Avg speed' : 'Avg pace' };
+    return a.type === 'ride'
+        ? { value: formatSpeed(km / (sec / 3600)), label: 'Avg speed' }
+        : { value: formatPace(sec / km), label: 'Avg pace' };
+}
+
+function Cell({ value, label }) {
+    return (
+        <div className="fx-row-cell">
+            <span className="fx-row-value">{value}</span>
+            <span className="fx-row-label">{label}</span>
+        </div>
+    );
+}
+
+function StarIcon() {
+    return (
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" className="fx-row-star">
+            <path d="M12 2.5l2.9 6.1 6.6.8-4.9 4.6 1.3 6.6L12 17.3l-5.9 3.3 1.3-6.6-4.9-4.6 6.6-.8z" />
+        </svg>
+    );
+}
 
 function parseStravaId(input) {
     const result = input.trim();
@@ -101,135 +137,149 @@ export default function ActivityList({ refreshKey }) {
         <div>
             <h2 className="card-title mb-2">Recent Activities</h2>
 
-            {loading && <p className="text-sm text-gray-500">Loading...</p>}
-            {!loading && error && <p className="text-sm text-red-600">{error}</p>}
+            {loading && <p className="status-loading">Loading...</p>}
+            {!loading && error && <p className="form-error">{error}</p>}
             {!loading && !error && activities.length === 0 && (
             <p className="empty-state">No activity at this moment.</p>)}
 
             {!loading && !error && activities.length > 0 && (
-            <ul className="divide-y divide-slate-100">
-                {activities.map((a) => 
-                    editingId === a.id ? (
-                    <li key={a.id} className="py-3 space-y-2">
-                        {editError && <p className='form-error'>{editError}</p>}
-                        <div className='grid grid-cols-2 gap-2'>
-                            <select
-                                value={editForm.type}
-                                onChange={(e) => updateEditField('type', e.target.value)}
-                                className="form-select"
-                            >
-                                {TYPE_OPTIONS.map((t) => (
-                                    <option key={t} value={t}>
-                                        {t}
-                                    </option>
-                                ))}
-                            </select>
-                            <input
-                                type="date"
-                                value={editForm.activityDate}
-                                onChange={(e) => updateEditField('activityDate', e.target.value)}
-                                className="form-input"
-                            />
-                            <input
-                                type="number"
-                                step="0.01"
-                                value={editForm.distanceKm}
-                                onChange={(e) => updateEditField('distanceKm', e.target.value)}
-                                placeholder="Distance (km)"
-                                className="form-input"
-                            />
-                            <input
-                                type="number"
-                                value={editForm.durationSec}
-                                onChange={(e) => updateEditField('durationSec', e.target.value)}
-                                placeholder="Duration (sec)"
-                                className="form-input"
-                            />
-                            <input
-                                type="number"
-                                step="0.01"
-                                value={editForm.elevationGainM}
-                                onChange={(e) => updateEditField('elevationGainM', e.target.value)}
-                                placeholder="Elevation (m, optional)"
-                                className="form-input"
-                            />
-                            <input
-                                type="text"
-                                inputMode="url"
-                                value={editForm.stravaLink}
-                                onChange={(e) => updateEditField('stravaLink', e.target.value)}
-                                placeholder="Strava link (optional)"
-                                className="form-input"
-                            />
-                        </div>
-                        <div className='flex gap-2'>
-                            <button
-                                type="button"
-                                onClick={() => saveEdit(a.id)}
-                                disabled={saving}
-                                className="btn-primary"
-                            >
-                                {saving ? 'Saving...' : 'Save'}
-                            </button>
-                            <button
-                                type="button"
-                                onClick={cancelEdit}
-                                disabled={saving}
-                                className="btn-secondary"
-                            >
-                                Cancel
-                            </button>
-                        </div>
-                        </li>
-                ) : (
-                    <li key={a.id} className="py-3 flex justify-between items-center text-sm">
-                        <div>
-                            <span className="font-medium text-slate-800 capitalize">{a.type}</span>
-                            <span className="text-slate-500 ml-2">
-                                {new Date(a.activityDate).toLocaleDateString('vi-VN')}
-                            </span>
-                        </div>
-                        <div className="flex items-center gap-3">
-                            <span className="text-slate-600">
-                                {a.distanceKm} km · {Math.round(a.durationSec / 60)} minutes
-                                {a.source !== 'manual' && <span className="badge ml-2">{a.source}</span>}
-                            </span>
-                            {a.stravaActivityId ? (
-                               <a
-                                href={stravaUrl(a.stravaActivityId)}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="text-xs text-orange-600 hover:text-orange-800 underline"
-                                title="Open this activity on Strava" >
-                                    Detail
-                               </a>    
-                            ) : (
-                                <span
-                                className='text-xs text-slate-300 cursor-not-allowed'
-                                title="Not linked to Strava yet. Click edit and paste the Strava link." >
-                                    Detail
+                <ul className="fx-rows">
+                    {activities.map((a) =>
+                        editingId === a.id ? (
+                            <li key={a.id} className="py-3 space-y-2">
+                                {editError && <p className="form-error">{editError}</p>}
+                                <div className="grid grid-cols-2 gap-2">
+                                    <select
+                                        value={editForm.type}
+                                        onChange={(e) => updateEditField('type', e.target.value)}
+                                        className="fx-input"
+                                    >
+                                        {TYPE_OPTIONS.map((t) => (
+                                            <option key={t} value={t}>
+                                                {t}
+                                            </option>
+                                        ))}
+                                    </select>
+                                    <input
+                                        type="date"
+                                        value={editForm.activityDate}
+                                        onChange={(e) => updateEditField('activityDate', e.target.value)}
+                                        className="fx-input"
+                                    />
+                                    <input
+                                        type="number"
+                                        step="0.01"
+                                        value={editForm.distanceKm}
+                                        onChange={(e) => updateEditField('distanceKm', e.target.value)}
+                                        placeholder="Distance (km)"
+                                        className="fx-input"
+                                    />
+                                    <input
+                                        type="number"
+                                        value={editForm.durationSec}
+                                        onChange={(e) => updateEditField('durationSec', e.target.value)}
+                                        placeholder="Duration (sec)"
+                                        className="fx-input"
+                                    />
+                                    <input
+                                        type="number"
+                                        step="0.01"
+                                        value={editForm.elevationGainM}
+                                        onChange={(e) => updateEditField('elevationGainM', e.target.value)}
+                                        placeholder="Elevation (m, optional)"
+                                        className="fx-input"
+                                    />
+                                    <input
+                                        type="text"
+                                        inputMode="url"
+                                        value={editForm.stravaLink}
+                                        onChange={(e) => updateEditField('stravaLink', e.target.value)}
+                                        placeholder="Strava link (optional)"
+                                        className="fx-input"
+                                    />
+                                </div>
+                                <div className="flex gap-2">
+                                    <button
+                                        type="button"
+                                        onClick={() => saveEdit(a.id)}
+                                        disabled={saving}
+                                        className="fx-btn fx-btn-accent"
+                                    >
+                                        {saving ? 'Saving...' : 'Save'}
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={cancelEdit}
+                                        disabled={saving}
+                                        className="fx-btn fx-btn-ghost"
+                                    >
+                                        Cancel
+                                    </button>
+                                </div>
+                            </li>
+                        ) : (
+                            <li key={a.id} className={`fx-row sport-${a.type}`}>
+                                <span className="fx-row-icon" title={a.type}>
+                                    <SportIcon type={a.type} />
                                 </span>
-                            )}
-                            <button
-                                type="button"
-                                onClick={() => startEdit(a)}
-                                className="text-xs text-slate-500 hover:text-slate-800 underline"
-                            >
-                                Edit
-                            </button>
-                            <button
-                                type="button"
-                                onClick={() => handleDelete(a.id)}
-                                className="text-xs text-red-600 hover:text-red-800 underline"
-                            >
-                                Delete
-                            </button>
-                        </div>
-                    </li>
-                ),
-                )}
-            </ul> 
+
+                                <div className="fx-row-title">
+                                    <span className="font-semibold text-white capitalize">{a.type}</span>
+                                    <StarIcon />
+                                    <span className="text-slate-400">
+                                        {new Date(a.activityDate).toLocaleDateString('vi-VN')}
+                                    </span>
+                                </div>
+
+                                <Cell value={`${a.distanceKm} km`} label="Distance" />
+                                <Cell value={formatMinutes(a.durationSec)} label="Duration" />
+                                <Cell value={<span className="badge">{a.source}</span>} label="Source" />
+                                <Cell {...formatAvg(a)} />
+                                <Cell
+                                    value={a.avgHeartRate ? `${a.avgHeartRate} bpm` : '—'}
+                                    label="Avg HR"
+                                />
+
+                                <div className="fx-row-actions">
+                                    {a.stravaActivityId ? (
+                                        <a
+                                            href={stravaUrl(a.stravaActivityId)}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="text-xs text-orange-400 hover:text-orange-300 underline"
+                                            title="Open this activity on Strava"
+                                        >
+                                            Detail
+                                        </a>
+                                    ) : (
+                                        <span
+                                            className="text-xs text-slate-400 hover:text-white underline"
+                                            title="Not linked to Strava yet. Click Edit and paste the Strava link."
+                                        >
+                                            Detail
+                                        </span>
+                                    )}
+                                    <button
+                                        type="button"
+                                        onClick={() => startEdit(a)}
+                                        className="text-xs text-slate-400 hover:text-white underline"
+                                    >
+                                        Edit
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={() => handleDelete(a.id)}
+                                        className="text-xs text-red-400 hover:text-red-300 underline"
+                                    >
+                                        Delete
+                                    </button>
+                                </div>
+                            </li>
+                        ),
+                    )}
+                </ul>
             )}
         </div>
     );
 }
+            

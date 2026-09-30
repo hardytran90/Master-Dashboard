@@ -30,11 +30,11 @@ export default function FitnessPage() {
 
                 <GpxUploadForm onImported={refresh} />
                 
-                <section className="card">
+                <section className="fx-panel">
                     <ActiveDayHeatmap refreshKey={refreshKey} />
                 </section>
 
-                <div className="card">
+                <div className="fx-panel">
                     <ActivityList refreshKey={refreshKey} onChanged={refresh} />
                 </div>
             </div>
