@@ -5,6 +5,7 @@ import ActivityList from './ActivityList';
 import GpxUploadForm from './GpxUploadForm';
 import ActiveDayHeatmap from './components/ActiveDayHeatmap';
 import FitnessDashboard from './components/FitnessDashboard';
+import { PanelHead } from './components/fitnessUi';
 
 export default function FitnessPage() {
     const [refreshKey, setRefreshKey] = useState(0);
@@ -22,7 +23,7 @@ export default function FitnessPage() {
         <div className='min-h-screen fitness-page-bg'>
             <div className="max-w-5xl mx-auto p-6 space-y-6">
                 <div className="flex items-center justify-between">
-                    <h1 className="text-xl font-semibold text-gray-900 drop-shadow-sm">My Fitness</h1>
+                    <h1 className="text-xl text-transform: uppercase text-gray-900 drop-shadow-sm">My Fitness</h1>
                     <button type="button" onClick={handleLogout} className="btn-secondary">Logout</button>
                 </div>
                     
@@ -31,6 +32,7 @@ export default function FitnessPage() {
                 <GpxUploadForm onImported={refresh} />
                 
                 <section className="fx-panel">
+                    <PanelHead title="Heat map" />
                     <ActiveDayHeatmap refreshKey={refreshKey} />
                 </section>
 

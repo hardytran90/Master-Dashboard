@@ -15,7 +15,10 @@ export default function FitnessOverview({ rows }) {
 
   return (
     <section className="fx-panel">
-      <PanelHead title="Overview" sub={`${range.from} → ${range.to}`}>
+      <PanelHead title="Overview" sub={
+        <span className='text-gray-300'>
+          {range.from} → {range.to}
+        </span>}>
         <Tabs options={PERIODS} value={period} onChange={setPeriod} label="Overview period" />
       </PanelHead>
 

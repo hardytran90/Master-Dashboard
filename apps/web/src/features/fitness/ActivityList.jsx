@@ -1,9 +1,18 @@
 import { useEffect, useState } from 'react';
 import { api } from '../../lib/api';
-import { SportIcon } from './components/fitnessUi';
+import runIcon from '../../assets/icons/run.png';
+import rideIcon from '../../assets/icons/ride.png';
 import { formatPace, formatSpeed } from './stats';
 
 const TYPE_OPTIONS = ['run', 'ride'];
+
+// The PNGs are used as a mask, so the icon takes the text color (dark on the lime/cyan circle)
+const SPORT_ICONS = { run: runIcon, ride: rideIcon };
+
+function SportGlyph({ type }) {
+    const icon = SPORT_ICONS[type] ?? runIcon;
+    return <span className="fx-glyph fx-row-glyph" style={{ '--glyph': `url(${icon})` }} aria-hidden="true" />;
+}
 
 // URL to link to detail activities in Strava
 const stravaUrl = (id) => `https://www.strava.com/activities/${id}`;
@@ -11,10 +20,10 @@ const stravaUrl = (id) => `https://www.strava.com/activities/${id}`;
 // Receive link with format https://www.strava.com/activities/1234567890 (might includes /overview, ?query...)
 function formatMinutes(sec) {
     const total = Math.round((Number(sec) || 0) / 60);
-    if (total < 60) return `${total} minutes`;
+    if (total < 60) return `${total}m`;
     const h = Math.floor(total / 60);
     const m = total % 60;
-    return m ? `${h}h ${m} minutes` : `${h}h`;
+    return m ? `${h}h ${m}m` : `${h}h`;
 }
 
 // Run → pace (min/km), Ride → speed (km/h)
@@ -220,7 +229,7 @@ export default function ActivityList({ refreshKey }) {
                         ) : (
                             <li key={a.id} className={`fx-row sport-${a.type}`}>
                                 <span className="fx-row-icon" title={a.type}>
-                                    <SportIcon type={a.type} />
+                                    <SportGlyph type={a.type} />
                                 </span>
 
                                 <div className="fx-row-title">

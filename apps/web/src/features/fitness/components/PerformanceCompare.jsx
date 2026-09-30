@@ -19,9 +19,12 @@ export default function PerformanceCompare({ rows }) {
     <section className="fx-panel">
       <PanelHead
         title="Performance compare"
-        sub={`${meta.prev}: ${prev.from} → ${prev.to}`}
+        sub={
+          <span className='text-gray-300'>
+            {meta.prev}: {prev.from} → {prev.to}
+          </span>}
       >
-        <Tabs options={PERIODS} value={period} onChange={setPeriod} label="Compare period" />
+        <Tabs options={PERIODS} value={period} onChange={setPeriod} label="Compare period"/>
       </PanelHead>
 
       <div className="fx-grid-2">

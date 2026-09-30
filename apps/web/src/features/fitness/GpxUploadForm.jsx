@@ -1,6 +1,7 @@
 import { useState, useRef } from 'react';
 import { api } from '../../lib/api';
 import { PanelHead } from './components/fitnessUi';
+import appleIcon from '../../assets/icons/apple.png';
 
 // Just labels to show where .gpx files usually come from — not links
 const SOURCES = ['Garmin', 'Apple Watch', 'Coros', 'Galaxy', 'Huawei'];
@@ -70,7 +71,7 @@ export default function GpxUploadForm({ onImported }) {
                     type="button"
                     onClick={handleUpload}
                     disabled={!selectedFile || isUploading}
-                    className="fx-btn fx-btn-accent"
+                    className="fx-btn fx-btn-accent btn-secondary"
                 >
                     {isUploading ? 'Importing...' : 'Import'}
                 </button>
@@ -99,11 +100,19 @@ export default function GpxUploadForm({ onImported }) {
                 <span className="fx-drop-file" aria-live="polite">{fileLine}</span>
 
                 <span className="fx-drop-sources">
-                    {SOURCES.map((s) => (
+                    {SOURCES.map((s) => 
+                    s === 'Apple Watch' ? (
+                        <span key={s} className="fx-chip">
+                            <span className="fx-glyph fx-chip-logo" style={{ '--glyph': `url(${appleIcon})` }} aria-hidden="true" />
+                            <span className="sr-only">Apple </span>
+                            Watch
+                        </span>
+                    ) : (
                         <span key={s} className="fx-chip">{s}</span>
-                    ))}
-                </span>
-            </label>
+                    ),
+                )}
+            </span>
+        </label>
 
             {error && <p className="fx-drop-error" role="alert">{error}</p>}
         </section>

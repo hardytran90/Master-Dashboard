@@ -68,11 +68,11 @@ export default function ProgressGoals({ rows }) {
       <PanelHead
         title="Progress goals"
         sub={
-          <>
+          <span className='text-gray-300'>
             Set distance goals and track progress.
             <br />
             {meta.name}: {range.from} → {range.to}
-          </>
+          </span>
         }
       >
         <Tabs options={PERIODS} value={period} onChange={(p) => { setPeriod(p); setDraft(null); }} label="Goal period" />

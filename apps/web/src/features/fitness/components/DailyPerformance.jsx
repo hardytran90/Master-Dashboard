@@ -79,17 +79,28 @@ export default function DailyPerformance({ rows }) {
         </div>
         <div>
           <div className="fx-chart-plot" style={{ '--rows': tickCount }} role="list" aria-label={`${sport} distance`}>
-            {buckets.map((b) => (
-              <div
-                key={b.from}
-                className="fx-chart-col"
-                role="listitem"
-                title={`${b.title}: ${b.km.toFixed(2)} km`}
-                aria-label={`${b.title}: ${b.km.toFixed(2)} km`}
-              >
-                {b.km > 0 && <span className="fx-chart-bar" style={{ height: `${(b.km / top) * 100}%` }} />}
-              </div>
-            ))}
+            {buckets.map((b, i) => {
+              const pct = (b.km / top) * 100;
+              // Keep the tooltip inside the panel at the left / right edges
+              let align = '';
+              if (i < 2) align = 'align-start';
+              else if (i > buckets.length - 3) align = 'align-end';
+              return (
+                <div
+                  key={b.from}
+                  className="fx-chart-col"
+                  role="listitem"
+                  tabIndex={0}
+                  aria-label={`${b.title}: ${b.km.toFixed(2)} km`}
+                >
+                  {b.km > 0 && <span className="fx-chart-bar" style={{ height: `${pct}%` }} />}
+                  <span className={`fx-chart-tip ${align}`} style={{ bottom: `calc(${pct}% + 8px)` }} aria-hidden="true">
+                    <span className="fx-chart-tip-title">{b.title}</span>
+                    <span className="fx-chart-tip-value">{b.km.toFixed(2)} km</span>
+                  </span>
+                </div>
+              );
+            })}
           </div>
           <div className={`fx-chart-x ${buckets.length > 16 ? 'dense' : ''}`} aria-hidden="true">
             {buckets.map((b) => (
