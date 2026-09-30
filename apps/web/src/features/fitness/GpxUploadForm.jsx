@@ -66,12 +66,12 @@ export default function GpxUploadForm({ onImported }) {
 
     return (
         <section className="fx-panel sport-run">
-            <PanelHead title="Upload activity">
+            <PanelHead title="Upload activity" >
                 <button
                     type="button"
                     onClick={handleUpload}
                     disabled={!selectedFile || isUploading}
-                    className="fx-btn fx-btn-accent btn-secondary"
+                    className="fx-btn-tab"
                 >
                     {isUploading ? 'Importing...' : 'Import'}
                 </button>

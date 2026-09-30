@@ -19,11 +19,12 @@ const STEP = CELL + GAP;
 
 const SCALES = { 
     green: [
-        'bg-[#E6BF83]',
+        'bg-[#7E3517]',
         'bg-[#c58d39]',
+        'bg-[#E6BF83]',
         'bg-[#FF8C00]',
         'bg-[#EB5406]',
-        'bg-[#7E3517]',
+        
     ],
     teal: [
         'bg-gray-100 dark:bg-gray-800',

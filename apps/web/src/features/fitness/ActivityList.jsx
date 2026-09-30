@@ -5,6 +5,20 @@ import rideIcon from '../../assets/icons/ride.png';
 import { formatPace, formatSpeed } from './stats';
 
 const TYPE_OPTIONS = ['run', 'ride'];
+const PAGE_SIZE = 10;
+
+// Page buttons to show, e.g. [1, '…', 4, 5, 6, '…', 12]
+function pageList(current, total) {
+    if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1);
+    const pages = [1];
+    const start = Math.max(2, current - 1);
+    const end = Math.min(total - 1, current + 1);
+    if (start > 2) pages.push('…');
+    for (let p = start; p <= end; p += 1) pages.push(p);
+    if (end < total - 1) pages.push('…');
+    pages.push(total);
+    return pages;
+}
 
 // The PNGs are used as a mask, so the icon takes the text color (dark on the lime/cyan circle)
 const SPORT_ICONS = { run: runIcon, ride: rideIcon };
@@ -65,6 +79,8 @@ export default function ActivityList({ refreshKey }) {
     const [activities, setActivities] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
+    const [page, setPage] = useState(1);
+    const [pagination, setPagination] = useState(null);
 
     const [editingId, setEditingId] = useState(null);
     const [editForm, setEditForm] = useState(null);
@@ -73,12 +89,27 @@ export default function ActivityList({ refreshKey }) {
 
     useEffect(() => {
         setLoading(true);
+        setError('');
         api
-            .getActivities()
-            .then((res) => setActivities(res.data))
+            .getActivities({ page, limit: PAGE_SIZE })
+            .then((res) => {
+                // Deleted the last row of the last page → step back one page
+                if (res.data.length === 0 && page > 1) {
+                    setPage((p) => p - 1);
+                    return;
+                }
+                setActivities(res.data);
+                setPagination(res.pagination);
+            })
             .catch((err) => setError(err.message))
             .finally(() => setLoading(false));
-    }, [refreshKey]);
+    }, [refreshKey, page]);
+
+    function goToPage(p) {
+        setEditingId(null);
+        setEditForm(null);
+        setPage(p);
+    }
 
     function startEdit(a) {
         setEditingId(a.id);
@@ -88,6 +119,7 @@ export default function ActivityList({ refreshKey }) {
             distanceKm: String(a.distanceKm),
             durationSec: String(a.durationSec),
             elevationGainM: a.elevationGainM != null ? String(a.elevationGainM) : '',
+            stravaLink: a.stravaActivityId ? stravaUrl(a.stravaActivityId) : '',
         });
         setEditError('');
     }
@@ -288,7 +320,50 @@ export default function ActivityList({ refreshKey }) {
                     )}
                 </ul>
             )}
-        </div>
-    );
-}
-            
+
+            {pagination && pagination.totalPages > 1 && (
+                        <nav className="fx-pager" aria-label="Recent activities pages">
+                            <span className="fx-pager-info">
+                                {(page - 1) * PAGE_SIZE + 1}–{Math.min(page * PAGE_SIZE, pagination.total)} of {pagination.total}
+                            </span>
+                            <div className="fx-pager-buttons">
+                                <button
+                                    type="button"
+                                    className="fx-page-btn"
+                                    onClick={() => goToPage(page - 1)}
+                                    disabled={page <= 1 || loading}
+                                    aria-label="Previous page"
+                                >
+                                    ‹ Prev
+                                </button>
+                                {pageList(page, pagination.totalPages).map((p, i) =>
+                                    p === '…' ? (
+                                        <span key={`gap-${i}`} className="fx-page-gap">…</span>
+                                    ) : (
+                                        <button
+                                            key={p}
+                                            type="button"
+                                            className="fx-page-btn"
+                                            aria-current={p === page ? 'page' : undefined}
+                                            onClick={() => goToPage(p)}
+                                            disabled={loading}
+                                        >
+                                            {p}
+                                        </button>
+                                    ),
+                                )}
+                                <button
+                                    type="button"
+                                    className="fx-page-btn"
+                                    onClick={() => goToPage(page + 1)}
+                                    disabled={page >= pagination.totalPages || loading}
+                                    aria-label="Next page"
+                                >
+                                    Next ›
+                                </button>
+                            </div>
+                        </nav>
+                    )}
+                </div>
+            );
+        }
