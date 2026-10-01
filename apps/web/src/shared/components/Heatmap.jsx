@@ -120,7 +120,7 @@ export default function Heatmap({
                 <div className='inline-flex gap-2 pr-1'>
                 {/* DAY-OF-WEEK LABELS */}
                   <div
-              className="grid text-[10px] leading-[12px] text-gray-600 dark:text-gray-300"
+              className="grid text-[13px] leading-[12px] text-gray-600 dark:text-gray-300"
               style={{ gridTemplateRows: `repeat(7, ${CELL}px)`, rowGap: GAP, paddingTop: 18 }}
             >
               {Array.from({ length: 7 }, (_, row) => {
@@ -132,7 +132,7 @@ export default function Heatmap({
           <div>
             {/* MONTH LABELS */}
             <div
-              className="relative mb-[3px] h-[15px] text-[10px] leading-[15px] text-gray-500 dark:text-gray-300"
+              className="relative mb-[3px] h-[15px] text-[13px] leading-[15px] text-gray-500 dark:text-gray-300"
               style={{ width: gridWidth }}
             >
               {monthLabels.map(({ w, month }) => (
@@ -175,7 +175,7 @@ export default function Heatmap({
         </div>
 
       {/* Legend */}
-      <div className="mt-2 flex items-center justify-end gap-1 text-[11px] text-gray-500 dark:text-gray-300">
+      <div className="mt-2 flex items-center justify-end gap-1 text-[13px] text-gray-500 dark:text-gray-300">
         <span className="mr-1">{lessLabel}</span>
         {scale.map((c, i) => (
           <span key={i} className={`h-3 w-3 rounded-[2px] ring-1 ring-inset ring-black/5 dark:ring-white/5 ${c}`} />

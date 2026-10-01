@@ -16,7 +16,7 @@ export const addDays = (d, n) => {
 };
 export function startOfWeek(d) {
   const x = new Date(d.getFullYear(), d.getMonth(), d.getDate(), 12);
-  x.setDate(x.getDate() - ((x.getDay() + 6) % 7)); // Thứ Hai
+  x.setDate(x.getDate() - ((x.getDay() + 6) % 7)); // Monday
   return x;
 }
 
@@ -57,13 +57,13 @@ export function normalize(a) {
 
 // Aggregate one sport within [from, to] (keys are YYYY-MM-DD, so string comparison works)
 export function summarize(rows, type, from, to) {
-  const s = { count: 0, km: 0, sec: 0, elev: null, bestPace: null, bestSpeed: null, days: new Set() };
+  const s = { count: 0, km: 0, sec: 0, elev: null, bestPace: null, bestSpeed: null, days: new Map() };
   for (const r of rows) {
     if (r.type !== type || r.key < from || r.key > to) continue;
     s.count += 1;
     s.km += r.km;
     s.sec += r.sec;
-    s.days.add(r.key);
+    s.days.set(r.key, (s.days.get(r.key) ?? 0) + 1);
     if (r.elev != null) s.elev = (s.elev ?? 0) + r.elev;
     // Skip activities under 0.5 km so junk data doesn't skew the pace
     if (r.km >= 0.5 && r.sec > 0) {

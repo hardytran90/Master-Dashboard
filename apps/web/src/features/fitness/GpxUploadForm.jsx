@@ -60,7 +60,7 @@ export default function GpxUploadForm({ onImported }) {
         }
     }
 
-    let fileLine = <span className="fx-drop-empty">No file chosen</span>;
+    let fileLine = <span className="fx-drop-empty text-sm">No file chosen</span>;
     if (selectedFile) fileLine = <span className="fx-accent">{selectedFile.name}</span>;
     else if (status === 'done') fileLine = <span className="fx-drop-done">Activity imported. Choose another file to continue.</span>;
 

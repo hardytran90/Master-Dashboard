@@ -25,7 +25,7 @@ function loadGoals() {
   }
 }
 
-export default function ProgressGoals({ rows }) {
+export default function ProgressGoals({ rows = [] }) {
   const [period, setPeriod] = useState('week');
   const [goals, setGoals] = useState(loadGoals);
   const [draft, setDraft] = useState(null);
@@ -52,12 +52,19 @@ export default function ProgressGoals({ rows }) {
     try {
       localStorage.setItem(GOALS_KEY, JSON.stringify(next));
     } catch {
+      // storage blocked → still works for this session
     }
     setDraft(null);
   }
 
   // 7 dots for each day of week (only for weekly format)
   const weekKeys = period === 'week' ? Array.from({ length: 7 }, (_, i) => toKey(addDays(range.start, i))) : [];
+
+  // One dot per day of the month (Monthly tab only)
+  const monthKeys = period === 'month' ? Array.from({ length: range.days }, (_, i) => toKey(addDays(range.start, i))) : [];
+  const todayKey = toKey(new Date());
+  // Empty cells before day 1 so it lands under the right weekday (Mon = column 1)
+  const monthOffset = period === 'month' ? (range.start.getDay() + 6) % 7 : 0;
 
   const summaries = Object.fromEntries(SPORTS.map((t) => [t, summarize(rows, t, range.from, range.to)]));
   const combinedKm = summaries.run.km + summaries.ride.km;
@@ -68,7 +75,7 @@ export default function ProgressGoals({ rows }) {
       <PanelHead
         title="Progress goals"
         sub={
-          <span className='text-gray-300'>
+          <span className="text-gray-300">
             Set distance goals and track progress.
             <br />
             {meta.name}: {range.from} → {range.to}
@@ -140,11 +147,35 @@ export default function ProgressGoals({ rows }) {
                   <div>Total elevation gained: <span className="fx-accent">{formatElev(s.elev)}</span></div>
                   <div>Total activities: <span className="fx-accent">{s.count}</span></div>
                 </div>
+
                 {weekKeys.length > 0 && (
                   <div className="fx-dots" aria-hidden="true">
                     {weekKeys.map((k) => (
                       <span key={k} className={`fx-dot ${s.days.has(k) ? 'on' : ''}`} title={k} />
                     ))}
+                  </div>
+                )}
+
+                {monthKeys.length > 0 && (
+                  <div className="fx-month-dots" role="list" aria-label={`${type} active days this month`}>
+                    {Array.from({ length: monthOffset }, (_, i) => (
+                      <span key={`pad-${i}`} aria-hidden="true" />
+                    ))}
+                    {monthKeys.map((k, i) => {
+                      const n = s.days.get(k) ?? 0;
+                      const label = `${k}: ${n} ${n === 1 ? 'activity' : 'activities'}`;
+                      return (
+                        <span
+                          key={k}
+                          role="listitem"
+                          className={`fx-mdot ${n ? 'on' : ''} ${k > todayKey ? 'future' : ''}`}
+                          title={label}
+                          aria-label={`Day ${i + 1}: ${n} ${n === 1 ? 'activity' : 'activities'}`}
+                        >
+                          {n >= 2 ? n : ''}
+                        </span>
+                      );
+                    })}
                   </div>
                 )}
               </div>

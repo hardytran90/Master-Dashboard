@@ -267,7 +267,7 @@ export default function ActivityList({ refreshKey }) {
                                 <div className="fx-row-title">
                                     <span className="font-semibold text-white capitalize">{a.type}</span>
                                     <StarIcon />
-                                    <span className="text-slate-400">
+                                    <span className="text-white">
                                         {new Date(a.activityDate).toLocaleDateString('vi-VN')}
                                     </span>
                                 </div>

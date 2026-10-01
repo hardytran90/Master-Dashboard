@@ -62,7 +62,7 @@
   }
 
   /* Card that stretches to its grid row height, so the footer can sit at the bottom */
-  .card-fill {
+  .card-fill {  
     @apply flex flex-col gap-3 h-full;
   }
 
@@ -198,12 +198,12 @@
 .fx-chart-y span { line-height: 0; white-space: nowrap; }
 .fx-chart-plot {
   height: 200px; display: flex; align-items: flex-end;
-  border-bottom: 1px solid #333;
-  background-image: linear-gradient(to top, #262626 1px, transparent 1px);
+  border-bottom: 1px solid #8d8c8c;
+  background-image: linear-gradient(to top, #8d8c8c 1px, transparent 1px);
   background-size: 100% calc(100% / var(--rows));
   background-position: bottom;
 }
-.fx-chart-col { flex: 1; height: 100%; display: flex; align-items: flex-end; justify-content: center; border-left: 1px solid #1f1f1f; }
+.fx-chart-col { flex: 1; height: 100%; display: flex; align-items: flex-end; justify-content: center; border-left: 1px solid #8d8c8c; }
 .fx-chart-bar { width: 60%; max-width: 22px; background: var(--accent); border-radius: 3px 3px 0 0; }
 .fx-chart-x { display: flex; margin-top: 8px; }
 .fx-chart-x span { flex: 1; text-align: center; white-space: nowrap; }
@@ -226,8 +226,8 @@
 
 .fx-drop-icon { color: var(--accent); margin-bottom: 6px; }
 .fx-drop-title { font-size: 1.15rem; font-weight: 700; color: #fff; }
-.fx-drop-sub { font-size: 12px; color: #ddd; }
-.fx-drop-file { font-size: 11px; margin-top: 4px; }
+.fx-drop-sub { font-size: 15px; color: #ddd; }
+.fx-drop-file { font-size: 11px; margin-top: 3px; }
 .fx-drop-empty { color: #ff5a5a; }
 .fx-drop-done { color: #8a8a8a; }
 .fx-drop-error { margin-top: 10px; font-size: 12px; color: #ff5a5a; }
@@ -265,7 +265,7 @@
 }
 
 .fx-row-title { display: flex; align-items: center; gap: 8px; white-space: nowrap; }
-.fx-row-star { color: #6b6b6b; flex: none; }
+.fx-row-star { color: #fff; flex: none; }
 
 .fx-row-cell { display: flex; flex-direction: column; gap: 2px; white-space: nowrap; }
 .fx-row-value { color: #fff; font-weight: 500; }
@@ -354,3 +354,14 @@
 .fx-page-btn:disabled { opacity: 0.4; cursor: not-allowed; }
 .fx-page-btn:focus-visible { outline: 2px solid #fff; outline-offset: 1px; }
 .fx-page-gap { color: #777; padding: 0 2px; }
+
+/* Progress goals — month grid: 1 row = 1 week, columns Mon → Sun */
+.fx-month-dots { display: grid; grid-template-columns: repeat(7, 12px); gap: 5px; flex: none; }
+.fx-mdot {
+  width: 12px; height: 12px; border-radius: 999px;
+  display: grid; place-items: center;
+  border: 1px solid #555;
+  font-size: 8px; font-weight: 800; line-height: 1; color: #111;
+}
+.fx-mdot.on { background: var(--accent); border-color: var(--accent); }
+.fx-mdot.future { opacity: 0.4; }

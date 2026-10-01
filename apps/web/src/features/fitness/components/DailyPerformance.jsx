@@ -72,7 +72,7 @@ export default function DailyPerformance({ rows }) {
       </PanelHead>
 
       <div className="fx-chart">
-        <div className="fx-chart-y" aria-hidden="true">
+        <div className="fx-chart-y text-gray-600 dark:text-gray-300" aria-hidden="true">
           {ticks.map((t) => (
             <span key={t}>{t} km</span>
           ))}
@@ -102,7 +102,7 @@ export default function DailyPerformance({ rows }) {
               );
             })}
           </div>
-          <div className={`fx-chart-x ${buckets.length > 16 ? 'dense' : ''}`} aria-hidden="true">
+          <div className={`fx-chart-x text-gray-600 dark:text-gray-300 ${buckets.length > 16 ? 'dense' : ''}`} aria-hidden="true">
             {buckets.map((b) => (
               <span key={b.from}>{b.label}</span>
             ))}

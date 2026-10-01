@@ -84,9 +84,9 @@ export default function ActiveDayHeatmap( { refreshKey = 0 }) {
     return (
         <div>
             <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
-                <h3 className="text-sm font-medium text-gray-900 dark:text-gray-500">
+                <h3 className="text-md font-medium text-gray-500 dark:text-gray-300">
                     {status === 'ready'
-                    ? `${days.length} active days ${periodText} (${fmtKm(totalKm)} km)`
+                    ? `${days.length} Active days ${periodText} (${fmtKm(totalKm)} km)`
                 : 'Active Day'}
                 </h3>
                 <select
@@ -104,7 +104,7 @@ export default function ActiveDayHeatmap( { refreshKey = 0 }) {
             </div>
 
             {status === 'error' ? (
-                <p className="text-sm text-red-600">Can't load data: {error}</p>
+                <p className="text-md text-red-600">Can't load data: {error}</p>
             ) : (
                 <div className={status === 'loading' ? 'opacity-50 transition-opacity' : ''}>
                     <Heatmap
@@ -117,8 +117,8 @@ export default function ActiveDayHeatmap( { refreshKey = 0 }) {
                 </div>
             )}
 
-            <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">
-                Each color square is a day with at least 1 activity. Darker color means more effort spent. 
+            <p className="mt-2 text-md text-gray-500 dark:text-gray-300">
+                Each color square is a day with at least 1 activity. Brighter color means more effort spent. 
             </p>
         </div>
     );
