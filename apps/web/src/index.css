@@ -61,6 +61,18 @@
          hover:bg-slate-600 transition-colors;
   }
 
+  .btn-strava { @apply inline-flex items-center justify-center rounded px-4 py-2 text-sm font-medium text-white bg-[#FC4C02] hover:bg-[#E34402] disabled:opacity-60 disabled:cursor-not-allowed; }
+  .btn-block { @apply w-full; }
+  .auth-page { @apply min-h-screen flex items-center justify-center bg-gray-50; }
+  .auth-card { @apply w-80 space-y-4 p-8; }
+  .auth-title { @apply text-xl font-semibold text-gray-800; }
+  .auth-divider { @apply flex items-center gap-3 text-xs text-gray-400 before:flex-1 before:border-t before:border-gray-200 after:flex-1 after:border-t after:border-gray-200; }
+  .sync-bar { @apply flex items-center justify-between gap-4; }
+  .sync-title { @apply text-sm font-semibold text-gray-800; }
+  .sync-meta { @apply text-xs text-gray-500; }
+  .sync-message { @apply mt-1 text-xs text-green-600; }
+  .sync-message-error { @apply mt-1 text-xs text-red-600; }
+
   /* Card that stretches to its grid row height, so the footer can sit at the bottom */
   .card-fill {  
     @apply flex flex-col gap-3 h-full;
@@ -137,7 +149,7 @@
 .fx-panel .form-hint,
 .fx-panel .status-loading,
 .fx-panel .empty-state { color: #8a8a8a; }
-.fx-panel .form-error { color: #ff5a5a; }
+.fx-panel .form-error { @apply text-sm text-red-600; }
 .fx-panel .badge { background: #2b2b2b; color: #ccc; }
 
 .fx-tabs { display: inline-flex; background: rgb(14 14 14 / var(--fx-alpha)); border: 1px solid var(--fx-border); border-radius: 999px; padding: 3px; }

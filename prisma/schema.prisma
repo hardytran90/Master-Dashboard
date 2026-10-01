@@ -57,7 +57,7 @@ enum ReadingStatus {
 // ── Models ────────────────────────────────────────────
 model User {
   id           Int      @id @default(autoincrement())
-  email        String   @unique
+  email        String?   @unique
   passwordHash String?  @map("password_hash")
   createdAt    DateTime @default(now()) @map("created_at")
 
@@ -77,10 +77,13 @@ model OAuthConnection {
   accessTokenEnc   String    @map("access_token_enc")
   refreshTokenEnc  String?   @map("refresh_token_enc")
   expiresAt        DateTime? @map("expires_at")
+  providerAccountId String?   @map("provider_account_id") // Strava athlete id
+  lastSyncedAt      DateTime? @map("last_synced_at")
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, provider])
+  @@unique([provider, providerAccountId])
   @@map("oauth_connections")
 }
 

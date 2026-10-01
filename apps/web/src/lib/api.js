@@ -52,6 +52,13 @@ export const api = {
         formData.append('file', file);
         return request('/activities/import-gpx', { method: 'POST', body: formData });
     },
+    stravaLoginUrl: () => `${API_BASE}/auth/strava/login`,
+
+    getStravaConnectUrl: () => request('/strava/connect-url'),
+
+    getStravaStatus: () => request('/strava/status'),
+    
+    syncStrava: () => request('/strava/sync', { method: 'POST' }),
 };
 
 export function getActiveDays(from, to) {

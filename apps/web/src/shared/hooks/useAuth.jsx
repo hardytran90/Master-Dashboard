@@ -17,8 +17,13 @@ export function AuthProvider({ children }) {
         setToken(null);
     }
 
+    function loginWithToken(newToken) {
+        localStorage.setItem('token', newToken);
+        setToken(newToken);
+    }
+
     return (
-        <AuthContext.Provider value={{ token, isAuthenticated: !!token, login, logout }}>
+        <AuthContext.Provider value={{ token, isAuthenticated: !!token, login, loginWithToken, logout }}>
             {children}
         </AuthContext.Provider>
     );
