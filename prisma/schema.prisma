@@ -98,6 +98,7 @@ model Activity {
   source            String   // "manual" | "strava" | "gpx"
   stravaActivityId  String?  @unique @map("strava_activity_id")
   summaryPolyline   String?  @db.Text @map("summary_polyline")
+  avgHeartRate      Int?     @map("avg_heart_rate")
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 

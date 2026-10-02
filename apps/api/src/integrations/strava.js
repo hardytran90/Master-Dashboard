@@ -152,6 +152,8 @@ function mapActivity(a, userId) {
     source: 'strava',
     stravaActivityId: String(a.id),
     summaryPolyline: a.map?.summary_polyline || null,
+    // Only present when the activity was recorded with a heart rate sensor
+    avgHeartRate: a.has_heartrate && a.average_heartrate ? Math.round(a.average_heartrate) : null,
   };
 }
 

@@ -83,6 +83,7 @@ router.get('/activities/stats', requireAuth, async (req, res) => {
         distanceKm: true,
         durationSec: true,
         elevationGainM: true,
+        avgHeartRate: true,
       },
       orderBy: { activityDate: 'asc' },
     });
