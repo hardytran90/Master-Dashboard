@@ -120,6 +120,9 @@ export default function ProgressGoals({ rows = [] }) {
           const s = summaries[type];
           const target = goal[type];
           const pct = target > 0 ? (s.km / target) * 100 : 0;
+          const scaleMax = Math.max(100, pct);
+          const fillPct = (pct / scaleMax) * 100;
+          const goalPct = (100 / scaleMax) * 100;
           return (
             <div key={type} className={`sport-${type} fx-card`}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
@@ -133,11 +136,20 @@ export default function ProgressGoals({ rows = [] }) {
                 className="fx-bar"
                 role="progressbar"
                 aria-valuemin={0}
-                aria-valuemax={100}
-                aria-valuenow={Math.min(100, Math.round(pct))}
+                aria-valuemax={Math.round(scaleMax)}
+                aria-valuenow={Math.round(pct)}
                 aria-label={`${type} goal progress`}
               >
-                <span style={{ width: `${Math.min(100, pct)}%` }} />
+                {/* Progress up to the goal (old color) */}
+                <span style={{ width: `${Math.min(fillPct, goalPct)}%` }} />
+                {pct > 100 && (
+                  <>
+                    {/* Extra distance beyond the goal (orange) */}
+                    <span className="fx-bar-over" style={{ left: `${goalPct}%`, width: `${fillPct - goalPct}%` }} />
+                    {/* White marker at the goal line */}
+                    <i className="fx-bar-goal" style={{ left: `${goalPct}%` }} aria-hidden="true" />
+                  </>
+                )}
               </div>
               <div className="fx-kv" style={{ marginBottom: 8 }}>
                 <span className="fx-goal-pct">{pct.toFixed(1)}%</span> of goal

@@ -2,6 +2,7 @@ import { useState, useRef } from 'react';
 import { api } from '../../lib/api';
 import { PanelHead } from './components/fitnessUi';
 import appleIcon from '../../assets/icons/apple.png';
+import { ImportIcon } from './components/fitnessUi';
 
 // Just labels to show where .gpx files usually come from — not links
 const SOURCES = ['Garmin', 'Apple Watch', 'Coros', 'Galaxy', 'Huawei'];
@@ -73,6 +74,7 @@ export default function GpxUploadForm({ onImported }) {
                     disabled={!selectedFile || isUploading}
                     className="fx-btn-action fx-btn-sm"
                 >
+                    <ImportIcon />
                     {isUploading ? 'Importing...' : 'Import'}
                 </button>
             </PanelHead>

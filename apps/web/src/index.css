@@ -61,7 +61,7 @@
          hover:bg-slate-600 transition-colors;
   }
 
-  .btn-strava, .fx-btn-action { @apply inline-flex items-center justify-center rounded px-4 py-2 text-sm font-medium text-white bg-[#FC4C02] hover:bg-[#E34402] disabled:opacity-60 disabled:cursor-not-allowed; }
+  .btn-strava, .fx-btn-action { @apply inline-flex items-center justify-center rounded gap-1.5 px-4 py-2 text-sm font-medium text-white bg-[#FC4C02] hover:bg-[#E34402] disabled:opacity-60 disabled:cursor-not-allowed; }
   .fx-btn-sm { @apply py-1.5 px-3; }
   .btn-block { @apply w-full; }
   .auth-page { @apply min-h-screen flex items-center justify-center bg-gray-50; }
@@ -158,6 +158,33 @@
 .fx-tab:hover { color: #e5e5e5; }
 .fx-tab[aria-pressed="true"] { background: #2b2b2b; color: #fff; }
 .fx-tab:focus-visible, .fx-btn:focus-visible { outline: 2px solid #fff; outline-offset: 1px; }
+.fx-tab {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Run / Ride tab icons: always white, dimmed when not selected */
+.fx-tab .fx-tab-sport {
+  display: inline-flex;
+  color: #fff;
+  opacity: 0.55;
+  transition: opacity 0.15s;
+}
+
+.fx-tab[aria-pressed='true'] .fx-tab-sport {
+  opacity: 1;
+}
+
+/* Orange background only for the selected Run / Ride tab
+   (:has() limits this to tabs that contain a sport icon) */
+.fx-tab:has(.fx-tab-sport)[aria-pressed='true'] {
+  background: #fc4c02;
+}
+
+.fx-tab:has(.fx-tab-sport)[aria-pressed='true']:hover {
+  background: #e34402;
+}
 
 .fx-btn { font-size: 11px; font-weight: 700; text-transform: uppercase; border-radius: 999px; padding: 5px 14px; }
 .fx-btn-accent { background: #c6ec2c; color: #111; }
@@ -447,10 +474,50 @@
   color: #9a9a9a;
 }
 
+/* Header badge: green when better, red when worse */
+.fx-delta .fx-delta-value.up { color: #22c55e; }
+.fx-delta .fx-delta-value.down { color: #ef4444; }
+
+/* Inline change next to each "This week" value — same font size as the value */
+.fx-delta-inline {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  margin-left: 8px;
+  font-size: inherit;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.fx-delta-inline .fx-delta-arrow { font-size: 0.7em; }
+.fx-delta-inline.up { color: #22c55e; }
+.fx-delta-inline.down { color: #fc4c02; }
+
 /* Progress goals: big orange % (Strava orange), "of goal" keeps the old style */
 .fx-kv .fx-goal-pct {
   font-size: 22px;
   font-weight: 700;
   color: #fc4c02;
   margin-right: 4px;
+}
+
+/* Progress bar that can go past 100% */
+.fx-bar {
+  position: relative;
+}
+
+.fx-bar .fx-bar-over {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  background: #fc4c02;
+  border-radius: 0 999px 999px 0;
+}
+
+.fx-bar .fx-bar-goal {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: #fff;
+  transform: translateX(-50%);
 }

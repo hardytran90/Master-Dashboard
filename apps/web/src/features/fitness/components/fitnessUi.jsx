@@ -12,10 +12,19 @@ export function Tabs({ options, value, onChange, label }) {
           key={o.id}
           type="button"
           className="fx-tab"
+          title={o.label}
           aria-pressed={value === o.id}
           onClick={() => onChange(o.id)}
         >
-          {o.label}
+          {o.icon ? (
+            <>
+              {o.icon}
+              {/* Hidden text so screen readers still read "Run" / "Ride" */}
+              <span className="sr-only">{o.label}</span>
+            </>
+          ) : (
+            o.label
+          )}
         </button>
       ))}
     </div>
@@ -63,5 +72,26 @@ export function Stat({ label, value }) {
       <div className="fx-stat-label">{label}</div>
       <div className="fx-stat-value">{value}</div>
     </div>
+  );
+}
+
+// Import icon: arrow going down into a tray. Uses currentColor, so it matches the button text
+export function ImportIcon() {
+  return (
+    <svg
+      width="16"
+      height="16"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <path d="M12 3v12" />
+      <path d="m7 10 5 5 5-5" />
+      <path d="M4 15v4a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-4" />
+    </svg>
   );
 }

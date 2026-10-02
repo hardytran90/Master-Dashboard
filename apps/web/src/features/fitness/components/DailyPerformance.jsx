@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { addDays, startOfWeek, toKey } from '../stats';
-import { PanelHead, Tabs } from './fitnessUi';
+import { PanelHead, SportIcon, Tabs } from './fitnessUi';
 
 const MODES = [
   { id: 'daily', label: 'Daily' },
@@ -8,8 +8,8 @@ const MODES = [
   { id: 'monthly', label: 'Monthly' },
 ];
 const SPORT_TABS = [
-  { id: 'run', label: 'Run' },
-  { id: 'ride', label: 'Ride' },
+  { id: 'run', label: 'Run', icon: <span className="fx-tab-sport"> <SportIcon type="run" /></span> },
+  { id: 'ride', label: 'Ride', icon: <span className="fx-tab-sport"> <SportIcon type="ride" /></span> },
 ];
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 const NICE_STEPS = [0.1, 0.2, 0.25, 0.5, 1, 2, 2.5, 5, 10, 20, 25, 50, 100, 200, 250, 500, 1000];
