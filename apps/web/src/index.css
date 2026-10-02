@@ -61,7 +61,8 @@
          hover:bg-slate-600 transition-colors;
   }
 
-  .btn-strava { @apply inline-flex items-center justify-center rounded px-4 py-2 text-sm font-medium text-white bg-[#FC4C02] hover:bg-[#E34402] disabled:opacity-60 disabled:cursor-not-allowed; }
+  .btn-strava, .fx-btn-action { @apply inline-flex items-center justify-center rounded px-4 py-2 text-sm font-medium text-white bg-[#FC4C02] hover:bg-[#E34402] disabled:opacity-60 disabled:cursor-not-allowed; }
+  .fx-btn-sm { @apply py-1.5 px-3; }
   .btn-block { @apply w-full; }
   .auth-page { @apply min-h-screen flex items-center justify-center bg-gray-50; }
   .auth-card { @apply w-80 space-y-4 p-8; }
@@ -214,12 +215,49 @@
   background-image: linear-gradient(to top, #8d8c8c 1px, transparent 1px);
   background-size: 100% calc(100% / var(--rows));
   background-position: bottom;
+  position: relative;
 }
 .fx-chart-col { flex: 1; height: 100%; display: flex; align-items: flex-end; justify-content: center; border-left: 1px solid #8d8c8c; }
 .fx-chart-bar { width: 60%; max-width: 22px; background: var(--accent); border-radius: 3px 3px 0 0; }
 .fx-chart-x { display: flex; margin-top: 8px; }
 .fx-chart-x span { flex: 1; text-align: center; white-space: nowrap; }
 @media (max-width: 640px) { .fx-chart-x.dense span:nth-child(even) { visibility: hidden; } }
+
+.fx-chart-line {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  pointer-events: none; /* let hover reach the bars so tooltips still work */
+  z-index: 1;
+}
+
+.fx-chart-line polyline {
+  fill: none;
+  stroke: #fc4c02;
+  stroke-width: 2.5;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+  vector-effect: non-scaling-stroke; /* keep the line 2.5px thick even though the SVG is stretched */
+}
+
+.fx-chart-dot {
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  border-radius: 9999px;
+  background: #fc4c02;
+  box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.35);
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* Tooltip stays above the line */
+.fx-chart-tip {
+  z-index: 2;
+}
 
 /* Upload drop zone */
 .fx-drop {

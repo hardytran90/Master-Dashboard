@@ -2,7 +2,7 @@
 import { Router } from 'express';
 import jwt from 'jsonwebtoken';
 import { prisma } from '../core/prisma.js';
-import { requireAuth } from '../middleware/requireAuth.js'; // keep the same path your current file uses
+import { requireAuth } from '../core/middleware/requireAuth.js'; // keep the same path your current file uses
 import { encrypt, decrypt } from '../utils/crypto.js';
 
 const router = Router();

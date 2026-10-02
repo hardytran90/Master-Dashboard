@@ -64,6 +64,15 @@ export default function DailyPerformance({ rows }) {
   const tickCount = Math.round(top / step);
   const ticks = Array.from({ length: tickCount + 1 }, (_, i) => Number((i * step).toFixed(2))).reverse();
 
+  // Points for the trend line: one point at the center top of each bar.
+  // Future periods (e.g. Oct–Dec, or days after today) are skipped so the line
+  // doesn't drop to 0 for periods that haven't happened yet.
+  const todayKey = toKey(new Date());
+  const linePoints = buckets
+    .map((b, i) => ({ i, pct: (b.km / top) * 100, past: b.from <= todayKey }))
+    .filter((p) => p.past)
+    .map((p) => ({ x: ((p.i + 0.5) / buckets.length) * 100, y: 100 - p.pct }));
+
   return (
     <section className={`fx-panel sport-${sport}`}>
       <PanelHead title={`${MODES.find((m) => m.id === mode).label} performance`}>
@@ -101,6 +110,21 @@ export default function DailyPerformance({ rows }) {
                 </div>
               );
             })}
+            {/* Trend line drawn over the bars. viewBox 0–100 maps directly to % of the plot */}
+            {linePoints.length > 1 && (
+              <svg className="fx-chart-line" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
+                <polyline points={linePoints.map((p) => `${p.x},${p.y}`).join(' ')} />
+              </svg>
+            )}
+            {/* Dots are HTML, not SVG circles, so they stay round when the SVG is stretched */}
+            {linePoints.map((p) => (
+              <span
+                key={p.x}
+                className="fx-chart-dot"
+                style={{ left: `${p.x}%`, top: `${p.y}%` }}
+                aria-hidden="true"
+              />
+            ))}
           </div>
           <div className={`fx-chart-x text-gray-600 dark:text-gray-300 ${buckets.length > 16 ? 'dense' : ''}`} aria-hidden="true">
             {buckets.map((b) => (

@@ -71,7 +71,7 @@ export default function GpxUploadForm({ onImported }) {
                     type="button"
                     onClick={handleUpload}
                     disabled={!selectedFile || isUploading}
-                    className="fx-btn-tab"
+                    className="fx-btn-action fx-btn-sm"
                 >
                     {isUploading ? 'Importing...' : 'Import'}
                 </button>

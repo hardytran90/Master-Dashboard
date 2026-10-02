@@ -84,7 +84,7 @@ export default function ProgressGoals({ rows = [] }) {
       >
         <Tabs options={PERIODS} value={period} onChange={(p) => { setPeriod(p); setDraft(null); }} label="Goal period" />
         {!draft && (
-          <button type="button" className="fx-btn-tab" onClick={openDraft}>
+          <button type="button" className="fx-btn-action fx-btn-sm" onClick={openDraft}>
             Set goal
           </button>
         )}
