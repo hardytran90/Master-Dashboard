@@ -9,6 +9,31 @@ const PERIODS = [
   { id: 'year', label: 'Yearly', cur: 'This year', prev: 'Last year' },
 ];
 
+// % change of this period vs the previous one, styled like Strava's monthly recap
+function DeltaBadge({ cur, prev, vsLabel }) {
+  let arrow = '';
+  let text = '0%';
+  if (prev > 0) {
+    const pct = Math.round(((cur - prev) / prev) * 100);
+    arrow = pct > 0 ? '▲' : pct < 0 ? '▼' : '';
+    text = `${pct}%`;
+  } else if (cur > 0) {
+    // Nothing last period → a percentage would be infinite, so show "New" instead
+    arrow = '▲';
+    text = 'New';
+  }
+
+  return (
+    <div className="fx-delta" title={`Distance ${vsLabel}`}>
+      <div className="fx-delta-value">
+        {arrow && <span className="fx-delta-arrow" aria-hidden="true">{arrow}</span>}
+        {text}
+      </div>
+      <div className="fx-delta-vs">{vsLabel}</div>
+    </div>
+  );
+}
+
 export default function PerformanceCompare({ rows }) {
   const [period, setPeriod] = useState('week');
   const meta = PERIODS.find((p) => p.id === period);
@@ -35,6 +60,7 @@ export default function PerformanceCompare({ rows }) {
             <div key={type} className={`sport-${type} fx-compare`}>
               <div className="fx-compare-head">
                 <SportLabel type={type} />
+                <DeltaBadge cur={a.km} prev={b.km} vsLabel={`vs. ${meta.prev.toLowerCase()}`} />
               </div>
               <table className="fx-compare-table">
                 <thead>

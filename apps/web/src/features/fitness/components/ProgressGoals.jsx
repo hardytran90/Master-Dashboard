@@ -139,8 +139,9 @@ export default function ProgressGoals({ rows = [] }) {
               >
                 <span style={{ width: `${Math.min(100, pct)}%` }} />
               </div>
-              <div className="fx-kv" style={{ marginBottom: 8 }}>{pct.toFixed(1)}% of goal</div>
-
+              <div className="fx-kv" style={{ marginBottom: 8 }}>
+                <span className="fx-goal-pct">{pct.toFixed(1)}%</span> of goal
+              </div>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', gap: 12 }}>
                 <div className="fx-kv">
                   <div>Total time: <span className="fx-accent">{formatDuration(s.sec)}</span></div>
