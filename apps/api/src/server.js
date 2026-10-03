@@ -4,6 +4,7 @@ import cors from 'cors';
 import authRouter from './routes/auth.js';
 import activitiesRouter from './routes/activities.js';
 import stravaRouter from './integrations/strava.js';
+import googleRouter from './integrations/google.js';
 
 
 const app = express();
@@ -15,6 +16,8 @@ app.get('/api/health', (_req, res) => res.json({ ok: true }));
 app.use('/api', authRouter);       // → POST /api/auth/register, POST /api/auth/login
 app.use('/api', activitiesRouter); // → GET /api/activities
 app.use('/api', stravaRouter);     // → /api/auth/strava/login, /api/strava/callback, /api/strava/sync, ...
+app.use('/api', googleRouter);     // → /api/auth/google/login, /api/google/callback, /api/google/sync, ...
+
 
 const PORT = process.env.PORT || 4000;
 app.listen(PORT, () => console.log(`API running on port ${PORT}`));

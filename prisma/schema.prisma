@@ -16,6 +16,7 @@ enum Provider {
   strava
   github
   wakatime
+  google
 }
 
 enum Domain {

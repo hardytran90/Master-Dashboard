@@ -1,4 +1,3 @@
-// apps/web/src/features/fitness/components/FitnessOverview.jsx
 import { useState } from 'react';
 import { SPORTS, periodRange, summarize, formatKm, formatDuration, formatElev, formatPace, formatSpeed } from '../stats';
 import { PanelHead, SportLabel, Stat, Tabs } from './fitnessUi';
@@ -35,9 +34,9 @@ export default function FitnessOverview({ rows }) {
                 <Stat label="Total time" value={formatDuration(s.sec)} />
                 {/* Ride uses speed (km/h) instead of pace — mins/km */}
                 {type === 'run' ? (
-                  <Stat label="Best pace" value={formatPace(s.bestPace)} />
+                  <Stat label="Avg pace" value={formatPace(s.bestPace)} />
                 ) : (
-                  <Stat label="Best speed" value={formatSpeed(s.bestSpeed)} />
+                  <Stat label="Avg speed" value={formatSpeed(s.bestSpeed)} />
                 )}
               </div>
             </div>
