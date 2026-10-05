@@ -4,7 +4,7 @@
 @layer components {
   /* Centered layout for standalone form pages (login...) */
   .page-centered {
-    @apply min-h-screen flex items-center justify-center bg-slate-50;
+    @apply min-h-screen flex items-center justify-center p-4;
   }
 
   /* Main content container for pages after login */
@@ -32,23 +32,11 @@
   }
 
   /* Form */
-  .form-input {
-    @apply w-full border border-slate-300 rounded px-3 py-2 text-sm
-           focus:outline-none focus:ring-2 focus:ring-slate-700/10;
-  }
-
-  .form-select {
-    @apply border border-slate-300 rounded px-2 py-1.5 text-sm
-           focus:outline-none focus:ring-2 focus:ring-slate-700/10;
-  }
-
-  .form-error {
-    @apply text-sm text-red-600;
-  }
-
-  .form-hint {
-    @apply text-xs text-slate-400;
-  }
+  .form-input { @apply w-full border border-slate-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-700/10; } 
+  .form-select { @apply border border-slate-300 rounded px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-slate-700/10; }
+  .form-success { @apply text-sm text-green-700; }
+  .form-error { @apply text-sm text-red-600; }
+  .form-hint { @apply text-xs text-slate-500; }
 
   /* Button */
   .btn-primary {
@@ -62,15 +50,27 @@
   }
 
   .btn-strava, .fx-btn-action { @apply inline-flex items-center justify-center rounded gap-1.5 px-4 py-2 text-sm font-medium text-white bg-[#FC4C02] hover:bg-[#E34402] disabled:opacity-60 disabled:cursor-not-allowed; }
+  .btn-google { @apply inline-flex items-center justify-center rounded px-4 py-2 text-sm font-medium
+         text-slate-800 bg-white border border-slate-300 hover:bg-slate-50 transition-colors
+         disabled:opacity-60 disabled:cursor-not-allowed; }
   .fx-btn-sm { @apply py-1.5 px-3; }
   .btn-block { @apply w-full; }
-  .auth-page { @apply min-h-screen flex items-center justify-center bg-gray-50; }
-  .auth-card { @apply w-80 space-y-4 p-8; }
-  .auth-title { @apply text-xl font-semibold text-gray-800; }
-  .auth-divider { @apply flex items-center gap-3 text-xs text-gray-400 before:flex-1 before:border-t before:border-gray-200 after:flex-1 after:border-t after:border-gray-200; }
+
+  /* Auth pages (login / register / forgot password) */
+  .auth-card { @apply w-full max-w-sm space-y-4 p-8 shadow-sm; }
+  .auth-divider { @apply flex items-center gap-3 text-xs text-slate-400
+         before:flex-1 before:border-t before:border-slate-200
+         after:flex-1 after:border-t after:border-slate-200; }
+  .auth-row { @apply flex items-center justify-between gap-2; }
+  .auth-link { @apply text-sm font-medium text-slate-900 underline-offset-2 hover:underline focus-visible:outline-none focus-visible:underline; }
+  .auth-footer { @apply text-center text-sm text-slate-600; }
+  .form-checkbox { @apply flex items-center gap-2 text-sm text-slate-700 cursor-pointer select-none; }
+  .form-checkbox input { @apply h-4 w-4 cursor-pointer accent-slate-900; }
+
+  /* Strava sync bar */
   .sync-bar { @apply flex items-center justify-between gap-4; }
-  .sync-title { @apply text-sm font-semibold text-gray-800; }
-  .sync-meta { @apply text-xs text-gray-500; }
+  .sync-title { @apply text-sm font-semibold text-slate-800; }
+  .sync-meta { @apply text-xs text-slate-500; }
   .sync-message { @apply mt-1 text-xs text-green-600; }
   .sync-message-error { @apply mt-1 text-xs text-red-600; }
 
