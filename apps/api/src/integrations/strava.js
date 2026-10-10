@@ -44,7 +44,7 @@ function buildAuthorizeUrl(state) {
     client_id: process.env.STRAVA_CLIENT_ID,
     redirect_uri: process.env.STRAVA_REDIRECT_URI,
     response_type: 'code',
-    approval_prompt: 'auto', // once approved, Strava won't ask again next time
+    approval_prompt: 'force', // Strava needs to ask again next time
     scope: 'read,activity:read_all',
     state,
   });

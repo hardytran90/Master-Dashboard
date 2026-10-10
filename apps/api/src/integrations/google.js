@@ -69,6 +69,7 @@ async function fetchProfile(accessToken) {
 // 1. Login button → redirect to Google's account picker
 //    GET /api/auth/google/login?remember=1
 router.get('/auth/google/login', (req, res) => {
+
   const remember = req.query.remember === '1';
   const params = new URLSearchParams({
     client_id: process.env.GOOGLE_CLIENT_ID,

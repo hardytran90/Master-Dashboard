@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { api } from '../../lib/api';
 import runIcon from '../../assets/icons/run.png';
 import rideIcon from '../../assets/icons/ride.png';
+import tennisIcon from '../../assets/icons/tennis.png';
 import { formatPace, formatSpeed } from './stats';
 
 const TYPE_OPTIONS = ['run', 'ride'];
@@ -21,7 +22,7 @@ function pageList(current, total) {
 }
 
 // The PNGs are used as a mask, so the icon takes the text color (dark on the lime/cyan circle)
-const SPORT_ICONS = { run: runIcon, ride: rideIcon };
+const SPORT_ICONS = { run: runIcon, ride: rideIcon, tennis: tennisIcon };
 
 function SportGlyph({ type }) {
     const icon = SPORT_ICONS[type] ?? runIcon;

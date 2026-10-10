@@ -138,6 +138,7 @@
 
 .sport-run  { --accent: #E6BF83; --accent-soft: rgba(230, 191, 131, 0.14); --accent-line: rgba(230, 191, 131, 0.45); }
 .sport-ride { --accent: #FF8C00; --accent-soft: rgba(255, 140, 0, 0.14); --accent-line: rgba(255, 140, 0, 0.45); }
+.sport-tennis { --accent: #21e707; --accent-soft: rgba(8, 139, 245, 0.14); --accent-line: rgba(13, 100, 222, 0.45); }
 
 .fx-panel { background: rgb(22 22 22 / var(--fx-alpha)); border: 1px solid var(--fx-border); border-radius: 14px; padding: 20px; color: #e5e5e5; }
 .fx-panel-head { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-start; gap: 12px; margin-bottom: 16px; }

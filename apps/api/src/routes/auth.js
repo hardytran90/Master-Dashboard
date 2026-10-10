@@ -145,7 +145,7 @@ router.post('/auth/forgot-password', async (req, res) => {
 
     res.json(genericReply);
   } catch (err) {
-    console.error('POST /auth/forgot-password error:', err);
+    console.error('POST /auth/forgot-password error:', err.meta?.driverAdapterError?.cause ?? err);
     res.status(500).json({ error: 'Could not send the email. Please try again later.' });
   }
 });

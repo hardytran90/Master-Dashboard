@@ -53,6 +53,7 @@ export const api = {
         return request('/activities/import-gpx', { method: 'POST', body: formData });
     },
     stravaLoginUrl: () => `${API_BASE}/auth/strava/login`,
+    googleLoginUrl: (remember) => `${API_BASE}/auth/google/login?remember=${remember ? 1 : 0}`,
 
     getStravaConnectUrl: () => request('/strava/connect-url'),
 
