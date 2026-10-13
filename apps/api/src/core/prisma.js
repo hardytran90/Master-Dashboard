@@ -1,20 +1,20 @@
-// core/prisma.js
 
 import { config } from 'dotenv';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { PrismaClient } from '@prisma/client';
+import { PrismaMariaDb } from '@prisma/adapter-mariadb';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 // core/prisma.js → src → api → apps → root, need 4 levels ../
 config({ path: path.resolve(__dirname, '../../../../.env') });
 
-import "dotenv/config";
-import { PrismaClient } from '@prisma/client';
-import { PrismaMariaDb } from '@prisma/adapter-mariadb';
-
 const globalForPrisma = globalThis;
+const isProd = process.env.NODE_ENV === 'production';
+const useSsl = process.env.DB_SSL === 'true';
 
 const dbUrl = new URL(process.env.DATABASE_URL);
+console.log('[prisma] connecting to', dbUrl.hostname, 'ssl:', useSsl);
 
 const adapter = new PrismaMariaDb({
   host: dbUrl.hostname,
@@ -25,13 +25,15 @@ const adapter = new PrismaMariaDb({
   allowPublicKeyRetrieval: true,
   connectTimeout: 5000,
   idleTimeout: 300,
+  connectionLimit: 5, // keep the pool small for serverless + TiDB Starter connection limits
+  ssl: useSsl ? { rejectUnauthorized: true } : undefined,
 });
 
 export const prisma =
   globalForPrisma.prisma ?? new PrismaClient({ adapter, 
-    log: ['query', 'warn', 'error'],
+    log: isProd ? ['warn', 'error'] : ['query', 'warn', 'error'],
    });
 
-if (process.env.NODE_ENV !== 'production') {
+if (!isProd) {
   globalForPrisma.prisma = prisma;
 }
