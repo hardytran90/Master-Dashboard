@@ -57,7 +57,7 @@ export default function StravaSyncButton({ onSynced }) {
   if (!status) return null;
 
   return (
-    <div className="card sync-bar">
+    <div className="fx-panel sync-bar">
       <div>
         <p className="sync-title">Strava</p>
         <p className="sync-meta">
