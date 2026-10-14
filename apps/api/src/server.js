@@ -8,7 +8,7 @@ import googleRouter from './integrations/google.js';
 
 
 const app = express();
-app.use(cors());
+app.use(cors({ origin: process.env.FRONTEND_URL || 'http://localhost:5173' }));
 app.use(express.json());
 
 app.get('/api/health', (_req, res) => res.json({ ok: true }));
@@ -18,6 +18,9 @@ app.use('/api', activitiesRouter); // → GET /api/activities
 app.use('/api', stravaRouter);     // → /api/auth/strava/login, /api/strava/callback, /api/strava/sync, ...
 app.use('/api', googleRouter);     // → /api/auth/google/login, /api/google/callback, /api/google/sync, ...
 
+if (!process.env.VERCEL) {
+    const PORT = process.env.PORT || 4000;
+    app.listen(PORT, () => console.log(`API running on port ${PORT}`));
+}
 
-const PORT = process.env.PORT || 4000;
-app.listen(PORT, () => console.log(`API running on port ${PORT}`));
+export default app;
