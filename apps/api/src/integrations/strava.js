@@ -11,6 +11,8 @@ const STRAVA_AUTH_URL = 'https://www.strava.com/oauth/authorize';
 const STRAVA_TOKEN_URL = 'https://www.strava.com/oauth/token';
 const STRAVA_API_BASE = 'https://www.strava.com/api/v3';
 
+const RESYNC_WINDOW_DAYS = 30;      // later syncs re-check activities from this many days before the last sync
+
 const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:5173';
 const SYNC_COOLDOWN_MS = 60 * 1000; // prevent spamming Sync: at least 60s between two syncs
 const PER_PAGE = 200;               // maximum page size Strava allows
@@ -278,19 +280,31 @@ router.post('/strava/sync', requireAuth, async (req, res) => {
       }
     }
 
+    // First sync → no `after` filter (full history).
+    // Later syncs → Strava's `after` param (epoch seconds) limits the result to the recent window.
+    const isFirstSync = !conn.lastSyncedAt;
+    const afterParam = isFirstSync
+      ? ''
+      : `&after=${Math.floor((conn.lastSyncedAt.getTime() - RESYNC_WINDOW_DAYS * 24 * 60 * 60 * 1000) / 1000)}`;
+
     // Keep fetching pages until a page returns fewer than PER_PAGE items
     const all = [];
     for (let page = 1; page <= MAX_PAGES; page++) {
-      const batch = await stravaGet(`/athlete/activities?per_page=${PER_PAGE}&page=${page}`, accessToken);
+      const batch = await stravaGet(
+        `/athlete/activities?per_page=${PER_PAGE}&page=${page}${afterParam}`,
+        accessToken
+      );
       all.push(...batch);
       if (batch.length < PER_PAGE) break;
     }
 
-    // A single query to find which activities already exist (instead of findUnique one by one)
-    const existing = await prisma.activity.findMany({
-      where: { stravaActivityId: { in: all.map((a) => String(a.id)) } },
-      select: { stravaActivityId: true, userId: true },
-    });
+    // A single query to find which activities already exist
+    const existing = all.length
+      ? await prisma.activity.findMany({
+          where: { stravaActivityId: { in: all.map((a) => String(a.id)) } },
+          select: { stravaActivityId: true, userId: true },
+        })
+      : [];
     const ownerById = new Map(existing.map((e) => [e.stravaActivityId, e.userId]));
 
     const toCreate = [];
@@ -307,20 +321,22 @@ router.post('/strava/sync', requireAuth, async (req, res) => {
     if (toCreate.length) {
       await prisma.activity.createMany({ data: toCreate, skipDuplicates: true });
     }
-    // Update in batches of 100 records per transaction — picks up edits made on Strava
-    // (changed type, corrected distance, ...)
-    for (let i = 0; i < toUpdate.length; i += 100) {
-      await prisma.$transaction(
-        toUpdate.slice(i, i + 100).map((d) =>
-          prisma.activity.update({ where: { stravaActivityId: d.stravaActivityId }, data: d })
-        )
-      );
+
+    // No transaction: each update is independent and idempotent — if the sync is cut off,
+    // the next sync simply rewrites the same data. updateMany = 1 SQL query per row
+    // (update() would run 3: find, update, then re-read the row to return it).
+    for (const d of toUpdate) {
+      await prisma.activity.updateMany({
+        where: { stravaActivityId: d.stravaActivityId, userId },
+        data: d,
+      });
     }
 
     const lastSyncedAt = new Date();
     await prisma.oAuthConnection.update({ where: { id: conn.id }, data: { lastSyncedAt } });
 
     res.json({
+      mode: isFirstSync ? 'full' : 'incremental',
       total: all.length,
       created: toCreate.length,
       updated: toUpdate.length,
