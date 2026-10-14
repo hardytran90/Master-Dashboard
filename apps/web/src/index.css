@@ -31,6 +31,39 @@
     @apply text-sm font-semibold text-slate-800;
   }
 
+  /* Page header */
+.fx-page-head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+  padding-bottom: 4px;
+}
+
+.fx-page-eyebrow {
+  font-size: 18px;
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: #fc4c02;
+}
+
+.fx-page-title {
+  font-size: clamp(2rem, 4vw, 3rem); /* scales with screen width: 32px on phones → 48px on desktop */
+  font-weight: 800;
+  line-height: 1.05;
+  letter-spacing: -0.02em;
+  text-transform: uppercase;
+  color: #fff;
+  text-shadow: 0 2px 12px rgb(0 0 0 / 0.25);
+}
+
+.fx-page-date {
+  margin-top: 6px;
+  font-size: 16px;
+  color: rgb(255 255 255 / 0.85);
+}
+
   /* Form */
   .form-input { @apply w-full border border-slate-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-700/10; } 
   .form-select { @apply border border-slate-300 rounded px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-slate-700/10; }
