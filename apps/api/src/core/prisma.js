@@ -5,6 +5,8 @@ import { fileURLToPath } from 'url';
 import { PrismaClient } from '@prisma/client';
 import { PrismaMariaDb } from '@prisma/adapter-mariadb';
 
+config({ quiet: true });
+
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 // core/prisma.js → src → api → apps → root, need 4 levels ../
 config({ path: path.resolve(__dirname, '../../../../.env') });
