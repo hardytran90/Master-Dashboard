@@ -12,6 +12,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@prisma/adapter-mariadb": "^7.10.1",
     "@prisma/client": "^7.9.1",
     "bcryptjs": "^3.0.3",
     "cors": "^2.8.6",
