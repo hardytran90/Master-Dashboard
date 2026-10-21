@@ -40,27 +40,35 @@
   padding-bottom: 4px;
 }
 
-.fx-page-eyebrow {
-  font-size: 18px;
+.fx-page-back {
+  /* matches Coding Tracker's eyebrow: 12px, semibold, uppercase, 0.2em tracking */
+  font-size: 0.75rem;
+  line-height: 1rem;
   font-weight: 600;
   letter-spacing: 0.2em;
   text-transform: uppercase;
-  color: #fc4c02;
+  color: #fff;
+  text-shadow: 0 1px 6px rgb(0 0 0 / 0.35);
 }
+.fx-page-back:hover { text-decoration: underline; }
+.fx-page-back:focus-visible { outline: 2px solid #fff; outline-offset: 2px; border-radius: 2px; }
 
 .fx-page-title {
-  font-size: clamp(2rem, 4vw, 3rem); /* scales with screen width: 32px on phones → 48px on desktop */
+  /* matches .ct-title: 30px → 36px from 640px, extrabold, tight tracking */
+  font-size: 1.875rem;
+  line-height: 2.25rem;
   font-weight: 800;
-  line-height: 1.05;
-  letter-spacing: -0.02em;
-  text-transform: uppercase;
+  letter-spacing: -0.025em;
   color: #fff;
   text-shadow: 0 2px 12px rgb(0 0 0 / 0.25);
 }
+@media (min-width: 640px) { .fx-page-title { font-size: 2.25rem; line-height: 2.5rem; } }
 
 .fx-page-date {
-  margin-top: 6px;
-  font-size: 16px;
+  /* matches the meta line under Coding Tracker's title (14px) */
+  margin-top: 4px;
+  font-size: 0.875rem;
+  line-height: 1.25rem;
   color: rgb(255 255 255 / 0.85);
 }
 

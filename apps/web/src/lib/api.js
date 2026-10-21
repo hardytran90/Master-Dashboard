@@ -1,8 +1,7 @@
-const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:4000/api';
+import { getToken } from './tokenStorage';
 
-function getToken() {
-    return localStorage.getItem('token');
-}
+const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:4000/api';
+// getToken reads localStorage AND sessionStorage (login without "Remember me")
 
 async function request(path, options = {}) {
     const token = getToken();
