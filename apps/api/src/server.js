@@ -5,6 +5,9 @@ import authRouter from './routes/auth.js';
 import activitiesRouter from './routes/activities.js';
 import stravaRouter from './integrations/strava.js';
 import googleRouter from './integrations/google.js';
+import codingRouter from './modules/coding/routes.js';
+import codingAnalyticsRouter from './modules/coding/analytics.js';
+import hubRouter from './modules/hub/routes.js';
 
 
 const app = express();
@@ -17,10 +20,22 @@ app.use('/api', authRouter);       // → POST /api/auth/register, POST /api/aut
 app.use('/api', activitiesRouter); // → GET /api/activities
 app.use('/api', stravaRouter);     // → /api/auth/strava/login, /api/strava/callback, /api/strava/sync, ...
 app.use('/api', googleRouter);     // → /api/auth/google/login, /api/google/callback, /api/google/sync, ...
+app.use('/api', codingRouter);     // → /api/coding/logs, /api/coding/wakatime/*
+app.use('/api', codingAnalyticsRouter); // → /api/coding/overview, /api/coding/breakdown, /api/coding/goal
+app.use('/api', hubRouter);        // → GET /api/hub/summary
 
 if (!process.env.VERCEL) {
     const PORT = process.env.PORT || 4000;
-    app.listen(PORT, () => console.log(`API running on port ${PORT}`));
+    // Express 5 passes listen errors (e.g. port already in use) to this callback
+    app.listen(PORT, (err) => {
+        if (err) {
+            console.error(err.code === 'EADDRINUSE'
+                ? `Port ${PORT} is already in use — an old API is probably still running. Stop it (macOS: lsof -ti :${PORT} | xargs kill) and restart.`
+                : err);
+            process.exit(1);
+        }
+        console.log(`API running on port ${PORT}`);
+    });
 }
 
 export default app;
