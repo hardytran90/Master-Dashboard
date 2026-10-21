@@ -1,0 +1,7 @@
+{
+  "outputDirectory": "dist",
+  "rewrites": [
+    { "source": "/coding", "destination": "/coding/index.html" },
+    { "source": "/coding/(.*)", "destination": "/coding/index.html" }
+  ]
+}
