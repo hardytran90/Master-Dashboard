@@ -1,5 +1,7 @@
 {
   "rewrites": [
+    { "source": "/coding", "destination": "https://YOUR-CODING-PROJECT.vercel.app/coding/" },
+    { "source": "/coding/:path*", "destination": "https://YOUR-CODING-PROJECT.vercel.app/coding/:path*" },
     { "source": "/(.*)", "destination": "/index.html" }
   ]
 }
