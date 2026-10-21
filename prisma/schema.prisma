@@ -34,9 +34,17 @@ enum MetricType {
 }
 
 enum Period {
+  day
   week
   month
   year
+}
+
+enum BreakdownKind {
+  project
+  language
+  editor
+  category
 }
 
 enum PostType {
@@ -65,6 +73,7 @@ model User {
   oauthConnections OAuthConnection[]
   activities       Activity[]
   codingLogs       CodingLog[]
+  codingBreakdowns CodingBreakdown[]
   goals            Goal[]
   posts            Post[]
 
@@ -118,6 +127,22 @@ model CodingLog {
 
   @@unique([userId, logDate, source])
   @@map("coding_logs")
+}
+
+// Per-day split of coding time (WakaTime summaries): one row per project / language / editor / category
+model CodingBreakdown {
+  id      Int           @id @default(autoincrement())
+  userId  Int           @map("user_id")
+  logDate DateTime      @map("log_date") @db.Date
+  kind    BreakdownKind
+  name    String        @db.VarChar(191)
+  seconds Int
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, logDate, kind, name])
+  @@index([userId, kind, logDate])
+  @@map("coding_breakdowns")
 }
 
 model Goal {
