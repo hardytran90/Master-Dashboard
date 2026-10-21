@@ -3,11 +3,17 @@
   "version": "1.0.0",
   "description": "private project",
   "workspaces": [
-    "apps/*"
+    "apps/*",
+    "packages/*"
   ],
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "dev": "concurrently -k -n api,web,coding -c blue,magenta,cyan \"npm run dev -w api\" \"npm run dev -w web\" \"npm run dev -w coding\"",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "db:generate": "prisma generate",
+    "db:migrate": "prisma migrate dev && prisma generate",
+    "db:deploy": "prisma migrate deploy && prisma generate",
+    "stop": "lsof -ti tcp:4000,5173,5174,5175,5176 | xargs kill -9 2>/dev/null; echo 'stopped dev servers on 4000, 5173-5176'"
   },
   "repository": {
     "type": "git",
@@ -22,6 +28,7 @@
   "homepage": "https://github.com/hardytran90/Master-Dashboard#readme",
   "devDependencies": {
     "@types/node": "^26.2.0",
+    "concurrently": "^9.2.5",
     "dotenv": "^17.4.2",
     "prisma": "^7.9.1"
   }
