@@ -77,7 +77,7 @@ function parseStravaId(input) {
     return match ? match[1] : null;
 }
 
-export default function ActivityList({ refreshKey }) {
+export default function ActivityList({ refreshKey, onChanged }) {
     const [activities, setActivities] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
@@ -157,7 +157,7 @@ export default function ActivityList({ refreshKey }) {
             setActivities((prev) => prev.map((a) => (a.id === id ? res.data : a)));
             setEditingId(null);
             setEditForm(null);
-            onChange?.();
+            onChanged?.(); // refresh charts & heatmap on the page
         } catch (err) {
             setEditError(err.message);
         } finally {
@@ -170,7 +170,7 @@ export default function ActivityList({ refreshKey }) {
         try {
             await api.deleteActivity(id);
             setActivities((prev) => prev.filter((a) => a.id !== id));
-            onChange?.();
+            onChanged?.(); // refresh charts & heatmap on the page
         } catch (err) {
             setError(err.message);
         }

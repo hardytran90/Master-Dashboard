@@ -59,6 +59,9 @@ export const api = {
     getStravaStatus: () => request('/strava/status'),
     
     syncStrava: () => request('/strava/sync', { method: 'POST' }),
+
+    // Master Dashboard home — one summary per app
+    getHubSummary: (today) => request(`/hub/summary?today=${today}`),
 };
 
 export function getActiveDays(from, to) {
