@@ -4,7 +4,7 @@ import { api } from '../../lib/api';
 
 // Messages matching the ?strava=... flag the backend appends when redirecting to /fitness
 const CALLBACK_MESSAGES = {
-  connected: { type: 'success', text: 'Connected with Strava. Click Sync Data to fetch activities.' },
+  connected: { type: 'success', text: 'Connected with Strava. Click Sync now to fetch activities.' },
   already_linked: { type: 'error', text: 'This Strava account is linked with other user.' },
   scope: { type: 'error', text: 'Need allowance to see activities on Strava to continue syncing.' },
   error: { type: 'error', text: 'Connection to Strava is failed or canceled.' },
@@ -74,7 +74,7 @@ export default function StravaSyncButton({ onSynced }) {
 
       {status.connected ? (
         <button type="button" className="btn-strava" onClick={handleSync} disabled={syncing}>
-          {syncing ? 'Syncing…' : 'Sync Data'}
+          {syncing ? 'Syncing…' : 'Sync now'}
         </button>
       ) : (
         <button type="button" className="btn-strava" onClick={handleConnect}>

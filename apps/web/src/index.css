@@ -177,10 +177,12 @@
    Change this one number to make all panels more or less transparent. */
 :root { --fx-alpha: 0.8; --fx-border: #4a4a4a; }
 
-.sport-run  { --accent: #E6BF83; --accent-soft: rgba(230, 191, 131, 0.14); --accent-line: rgba(230, 191, 131, 0.45); }
-.sport-ride { --accent: #FF8C00; --accent-soft: rgba(255, 94, 0, 0.14); --accent-line: rgba(255, 140, 0, 0.45); }
-.sport-tennis { --accent: #d7e419; --accent-soft: rgba(12, 230, 31, 0.14); --accent-line: rgba(9, 194, 77, 0.45); }
-.sport-walk { --accent: #0e957a; --accent-soft: rgba(12, 230, 31, 0.14); --accent-line: rgba(9, 194, 77, 0.45); }
+/* Sport colors — one vivid family: Run = Strava orange, Ride = electric blue,
+   Walk = trail green, Tennis = tennis-ball yellow. Same saturation; always shown with icon + name. */
+.sport-run    { --accent: #FC4C02; --accent-soft: rgba(252, 76, 2, 0.14);   --accent-line: rgba(252, 76, 2, 0.45); }
+.sport-ride   { --accent: #2F8CFF; --accent-soft: rgba(47, 140, 255, 0.14); --accent-line: rgba(47, 140, 255, 0.45); }
+.sport-walk   { --accent: #12B886; --accent-soft: rgba(18, 184, 134, 0.14); --accent-line: rgba(18, 184, 134, 0.45); }
+.sport-tennis { --accent: #C6EC2C; --accent-soft: rgba(198, 236, 44, 0.14); --accent-line: rgba(198, 236, 44, 0.45); }
 
 .fx-panel { background: rgb(22 22 22 / var(--fx-alpha)); border: 1px solid var(--fx-border); border-radius: 14px; padding: 20px; color: #e5e5e5; }
 .fx-panel-head { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-start; gap: 12px; margin-bottom: 16px; }
@@ -305,7 +307,7 @@
 
 .fx-chart-line polyline {
   fill: none;
-  stroke: #fc4c02;
+  stroke: #fff; /* neutral: the bars below already carry the sport color */
   stroke-width: 2.5;
   stroke-linejoin: round;
   stroke-linecap: round;
@@ -317,8 +319,8 @@
   width: 8px;
   height: 8px;
   border-radius: 9999px;
-  background: #fc4c02;
-  box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.35);
+  background: #fff;
+  box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.45);
   transform: translate(-50%, -50%);
   pointer-events: none;
   z-index: 1;
@@ -344,7 +346,7 @@
 .fx-drop:focus-within { outline: 2px solid #fff; outline-offset: 2px; }
 .fx-drop.is-busy { cursor: progress; opacity: 0.7; }
 
-.fx-drop-icon { color: var(--accent); margin-bottom: 6px; }
+.fx-drop-icon { color: #fc4c02; margin-bottom: 6px; } /* Strava orange */
 .fx-drop-title { font-size: 1.15rem; font-weight: 700; color: #fff; }
 .fx-drop-sub { font-size: 15px; color: #ddd; }
 .fx-drop-file { font-size: 11px; margin-top: 3px; }
@@ -552,7 +554,8 @@
   position: absolute;
   top: 0;
   bottom: 0;
-  background: #fc4c02;
+  /* past 100%: sport color + white stripes, so it reads as "extra" for every sport */
+  background: repeating-linear-gradient(45deg, var(--accent) 0 4px, rgb(255 255 255 / 0.6) 4px 8px);
   border-radius: 0 999px 999px 0;
 }
 
@@ -564,3 +567,40 @@
   background: #fff;
   transform: translateX(-50%);
 }
+/* ===== Master Dashboard hub ===== */
+@layer components {
+  .hub-page { @apply min-h-screen; background: radial-gradient(1200px 600px at 10% -10%, #1e293b 0%, #0b1120 55%, #050814 100%); }
+  .hub-card {
+    @apply relative flex flex-col overflow-hidden rounded-2xl border border-white/10 bg-white/[0.04] p-6
+           transition duration-200 hover:-translate-y-0.5 hover:border-white/25 hover:bg-white/[0.07]
+           focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white;
+  }
+  .hub-card:hover .hub-arrow { @apply translate-x-1; }
+  .hub-arrow { @apply inline-block transition-transform; }
+  .hub-hero { @apply mt-1 text-3xl sm:text-4xl font-extrabold tracking-tight text-white tabular-nums; }
+  .hub-stat { @apply min-w-0 rounded-xl border border-white/10 bg-black/20 px-2.5 py-2.5 sm:px-3; }
+  .hub-stat-label { @apply text-[11px] font-semibold uppercase tracking-wider text-slate-400; }
+  .hub-stat-value { @apply mt-1 whitespace-nowrap text-base font-bold text-white tabular-nums sm:text-lg; }
+  .hub-stat-sub { @apply text-xs text-slate-400; }
+  .hub-delta { @apply text-xs font-semibold text-slate-400; }
+  .hub-delta-up { @apply text-emerald-400; }
+  .hub-delta-down { @apply text-rose-400; }
+  .hub-progress { @apply mt-1.5 h-2 overflow-hidden rounded-full bg-white/10; }
+  .hub-progress > span { @apply block h-full rounded-full; }
+  .hub-bars-plot { @apply flex h-24 items-end gap-2 border-b border-white/15; }
+  .hub-bar-col { @apply relative flex h-full flex-1 items-end justify-center; }
+  .hub-bar { @apply block w-full max-w-6 rounded-t; }
+  .hub-bar-tip { @apply pointer-events-none absolute -top-1 left-1/2 z-10 -translate-x-1/2 -translate-y-full whitespace-nowrap
+                 rounded bg-slate-950 px-1.5 py-0.5 text-[11px] font-semibold text-white opacity-0 shadow ring-1 ring-white/15 transition-opacity; }
+  .hub-bar-col:hover .hub-bar-tip { @apply opacity-100; }
+  .hub-bars-x { @apply mt-1.5 flex gap-2 text-center text-[11px] text-slate-400; }
+  .hub-bars-x > span { @apply flex-1; }
+  .hub-skel { @apply animate-pulse rounded-lg bg-white/10; }
+  .hub-card-disabled { @apply cursor-default opacity-60 hover:translate-y-0 hover:border-white/10 hover:bg-white/[0.04]; }
+  .hub-card-bar { @apply absolute inset-x-0 bottom-0 h-1 opacity-70; }
+  .hub-icon { @apply grid h-12 w-12 place-items-center rounded-xl; }
+  .hub-badge { @apply rounded-full bg-white/10 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wider text-slate-200; }
+  .hub-badge-muted { @apply bg-white/5 text-slate-400; }
+  .hub-logout { @apply rounded-lg border border-white/15 px-4 py-2 text-sm font-medium text-slate-200 hover:bg-white/10; }
+}
+@media (prefers-reduced-motion: reduce) { .hub-card { transition: none; } .hub-card:hover { transform: none; } }

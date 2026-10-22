@@ -111,7 +111,7 @@ export default function ActiveDayHeatmap( { refreshKey = 0 }) {
                     from={from}
                     to={to}
                     data={data}
-                    colorScale="green"
+                    colorScale="ember"
                     emptyTooltip={(key) => `${fmtDate(key)} : No activity`}
                     />
                 </div>

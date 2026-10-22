@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../shared/hooks/useAuth';
 import ActivityList from './ActivityList';
 import GpxUploadForm from './GpxUploadForm';
@@ -25,9 +25,10 @@ export default function FitnessPage() {
     return (
         <div className='min-h-screen fitness-page-bg'>
             <div className="max-w-5xl mx-auto p-6 space-y-6">
+                {/* Same header layout as Coding Tracker: back link · title · meta line */}
                 <header className="fx-page-head">
                     <div>
-                        <p className="fx-page-eyebrow">Dashboard</p>
+                        <Link to="/" className="fx-page-back">← Master Dashboard</Link>
                         <h1 className="fx-page-title">My Fitness</h1>
                         <p className="fx-page-date">{today}</p>
                     </div>

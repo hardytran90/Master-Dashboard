@@ -17,7 +17,15 @@ const CELL = 12 // pixel
 const GAP = 3;
 const STEP = CELL + GAP;
 
-const SCALES = { 
+const SCALES = {
+    // One orange-brown hue, dim → bright (validated: monotone lightness, 1 hue, level 1 ≥ 2:1 on #161616)
+    ember: [
+        'bg-[#2b2b2b]',
+        'bg-[#7a3410]',
+        'bg-[#a9440b]',
+        'bg-[#d95506]',
+        'bg-[#ff7f3a]',
+    ],
     green: [
         'bg-[#7E3517]',
         'bg-[#c58d39]',
